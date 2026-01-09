@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Noogin Nooks – Personalized Learning Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#05040A;--bg-alt:#0C0A17;--surface:#111024;--surface-soft:#181834;--border-subtle:rgba(255,255,255,0.06);--text:#F5F3FF;--text-soft:#C9C7E6;--muted:#8582AD;--accent:#A855F7;--accent-soft:rgba(168,85,247,0.18);--accent-strong:#C084FC;--accent-alt:#F97373;--shadow-soft:0 18px 45px rgba(0,0,0,0.55);--radius-xl:28px;--radius-lg:20px;--radius-md:14px;--transition-fast:180ms ease-out;--transition-med:260ms ease-out;--nav-height:80px}
+[data-theme="light"]{--bg:#F5E6D3;--bg-alt:#FFE7DF;--surface:#FFFFFF;--surface-soft:#FFEDE6;--border-subtle:rgba(0,0,0,0.08);--text:#2A0810;--text-soft:#5D202A;--muted:#8A4A50;--accent:#7F1D1D;--accent-soft:rgba(127,29,29,0.08);--accent-strong:#B91C1C;--accent-alt:#DC6B6B;--shadow-soft:0 18px 40px rgba(148,27,39,0.18)}
+html,body{scroll-behavior:smooth;background:var(--bg)}
+[data-theme="dark"] html,[data-theme="dark"] body{background:radial-gradient(circle at top,#181834 0,var(--bg) 40%)}
+body{font-family:'Space Grotesk',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);line-height:1.7;min-height:100vh;padding-top:var(--nav-height)}
+img{max-width:100%;display:block}
+nav{position:fixed;inset:0 0 auto 0;height:var(--nav-height);display:flex;align-items:center;z-index:1000;backdrop-filter:blur(16px);background:linear-gradient(90deg,rgba(5,4,10,0.96),rgba(5,4,10,0.94),rgba(5,4,10,0.92));border-bottom:1px solid var(--border-subtle);transition:box-shadow var(--transition-med),background var(--transition-med),border-color var(--transition-fast)}
+[data-theme="light"] nav{background:linear-gradient(90deg,rgba(255,247,243,0.97),rgba(255,247,243,0.99))}
+nav.scrolled{box-shadow:0 14px 40px rgba(0,0,0,0.55)}
+.nav-inner{width:min(1120px,92vw);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
+.nav-left{display:flex;align-items:center;gap:1.1rem;min-width:0;flex:1}
+.nav-right{display:flex;align-items:center;gap:1.6rem;flex-shrink:0}
+.back-link{text-decoration:none;color:var(--text-soft);font-size:0.92rem;display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:999px;border:1px solid var(--border-subtle);background:radial-gradient(circle at top left,rgba(168,85,247,0.24),transparent 60%);transition:background var(--transition-med),transform var(--transition-fast),border-color var(--transition-fast),color var(--transition-fast);white-space:nowrap;flex-shrink:0}
+.back-link span.icon{font-size:1.1rem;transform:translateY(-1px)}
+.back-link:hover{border-color:var(--accent-strong);color:var(--accent-strong);transform:translateY(-1px);background:radial-gradient(circle at top left,rgba(168,85,247,0.3),transparent 60%)}
+.nav-title{font-size:0.86rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;min-width:0}
+.nav-links{list-style:none;display:flex;gap:1.2rem;align-items:center;flex-shrink:0}
+.nav-link{text-decoration:none;font-size:0.84rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);position:relative;padding-block:0.2rem;transition:color var(--transition-fast);white-space:nowrap}
+.nav-link::after{content:"";position:absolute;left:0;bottom:-0.2rem;width:0;height:1.5px;border-radius:999px;background:linear-gradient(90deg,var(--accent-strong),var(--accent-alt));transition:width var(--transition-fast)}
+.nav-link:hover{color:var(--text)}
+.nav-link:hover::after,.nav-link.active::after{width:100%}
+.theme-toggle{display:inline-flex;align-items:center;gap:0.35rem;border-radius:999px;padding:0.35rem 0.75rem;border:1px solid var(--border-subtle);background:radial-gradient(circle at top,rgba(24,24,59,0.9),rgba(5,5,15,0.95));color:var(--text-soft);font-size:0.8rem;cursor:pointer;transition:background var(--transition-med),border-color var(--transition-fast),transform var(--transition-fast),color var(--transition-fast);white-space:nowrap;flex-shrink:0}
+[data-theme="light"] .theme-toggle{background:radial-gradient(circle at top,rgba(255,255,255,0.98),rgba(255,247,243,0.98))}
+.theme-toggle:hover{border-color:var(--accent-strong);color:var(--accent-strong);transform:translateY(-1px)}
+.theme-toggle .icon{font-size:1rem}
+.nav-toggle{display:none;flex-direction:column;gap:4px;border:none;background:transparent;cursor:pointer;flex-shrink:0}
+.nav-toggle span{width:20px;height:2px;border-radius:999px;background:var(--text-soft);transition:transform var(--transition-fast),opacity var(--transition-fast)}
+.nav-toggle.open span:nth-child(1){transform:translateY(4px) rotate(45deg)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:translateY(-4px) rotate(-45deg)}
+@media (max-width:880px){
+.nav-inner{gap:0.8rem}
+.nav-title{display:none}
+.nav-links{position:fixed;inset:var(--nav-height) 0 auto auto;right:-100%;padding:1.4rem 1.6rem 1.6rem;flex-direction:column;align-items:flex-start;background:var(--surface);border-left:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);gap:1rem;transition:right var(--transition-med)}
+.nav-links.open{right:0}
+.nav-toggle{display:flex}
+.nav-right{gap:0.8rem}
+.theme-toggle{padding-inline:0.6rem}
+}
+main{width:min(1120px,92vw);margin:0 auto;padding-bottom:4rem}
+section{padding-block:4.5rem}
+.section-label{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--muted);margin-bottom:0.9rem}
+h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,2.2vw + 1.6rem,2.8rem);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:1rem}
+.section-subtitle{max-width:560px;font-size:0.98rem;color:var(--text-soft)}
+p{font-size:1rem;color:var(--text-soft)}
+.pill{display:inline-flex;align-items:center;gap:0.4rem;padding:0.25rem 0.7rem;border-radius:999px;border:1px solid var(--border-subtle);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:2.7rem;align-items:flex-start}
+@media (max-width:880px){
+.grid-2{grid-template-columns:minmax(0,1fr)}
+section{padding-block:3.4rem}
+}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.1fr);gap:3rem;align-items:center;padding-top:1.2rem;padding-bottom:4.2rem}
+.hero-copy h1{font-size:clamp(2.8rem,3.4vw + 1.8rem,4rem);line-height:1.05;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.15rem}
+.hero-copy h1 span.accent{background:linear-gradient(120deg,var(--accent-strong),var(--accent-alt));-webkit-background-clip:text;color:transparent}
+.hero-lede{font-size:1.02rem;max-width:520px;color:var(--text-soft);margin-bottom:1.4rem}
+.hero-meta{display:flex;flex-wrap:wrap;gap:1.2rem;margin-bottom:1.4rem}
+.hero-meta-block{padding:0.85rem 1rem;border-radius:16px;background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(10,10,30,0.9));border:1px solid rgba(255,255,255,0.07);min-width:150px}
+[data-theme="light"] .hero-meta-block{background:linear-gradient(135deg,#FFFFFF,rgba(255,231,223,0.98));border-color:rgba(127,29,29,0.16)}
+.hero-meta-label{font-size:0.73rem;text-transform:uppercase;letter-spacing:0.17em;color:var(--muted);margin-bottom:0.3rem}
+.hero-meta-value{font-size:0.95rem;color:var(--text)}
+.hero-footnote{font-size:0.86rem;color:var(--muted)}
+.hero-visual{position:relative;isolation:isolate}
+.hero-orbit{position:absolute;inset:-18% -15%;background:radial-gradient(circle at 20% 0%,rgba(168,85,247,0.35),transparent 55%),radial-gradient(circle at 80% 100%,rgba(56,189,248,0.26),transparent 50%);filter:blur(6px);opacity:0.9;z-index:-1;animation:orbit-pulse 8s ease-in-out infinite}
+@keyframes orbit-pulse{0%,100%{opacity:0.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+.phone-stack{position:relative;width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;perspective:1400px}
+.phone{position:absolute;width:44%;max-width:250px;border-radius:32px;overflow:hidden;box-shadow:var(--shadow-soft);border:1px solid rgba(255,255,255,0.12);background:#000;transform-origin:center;transition:transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1),box-shadow 500ms ease-out,border-color 260ms ease-out;animation:float-phone 4s ease-in-out infinite}
+.phone:nth-child(1){transform:translateX(-38%) rotateY(18deg) rotateZ(-10deg) translateY(10px);animation-delay:0s}
+.phone:nth-child(2){transform:translateY(-8px) scale(1.05);z-index:2;animation-delay:0.5s}
+.phone:nth-child(3){transform:translateX(38%) rotateY(-18deg) rotateZ(10deg) translateY(16px);animation-delay:1s}
+@keyframes float-phone{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.phone:nth-child(1){animation-name:float-phone-1}
+@keyframes float-phone-1{0%,100%{transform:translateX(-38%) rotateY(18deg) rotateZ(-10deg) translateY(10px)}50%{transform:translateX(-38%) rotateY(18deg) rotateZ(-10deg) translateY(-2px)}}
+.phone:nth-child(2){animation-name:float-phone-2}
+@keyframes float-phone-2{0%,100%{transform:translateY(-8px) scale(1.05)}50%{transform:translateY(-20px) scale(1.05)}}
+.phone:nth-child(3){animation-name:float-phone-3}
+@keyframes float-phone-3{0%,100%{transform:translateX(38%) rotateY(-18deg) rotateZ(10deg) translateY(16px)}50%{transform:translateX(38%) rotateY(-18deg) rotateZ(10deg) translateY(4px)}}
+.phone img{width:100%;height:100%;object-fit:cover}
+.phone-stack:hover .phone:nth-child(2){transform:translateY(-12px) scale(1.08);box-shadow:0 25px 60px rgba(168,85,247,0.4)}
+.phone-stack:hover .phone:nth-child(1){transform:translateX(-42%) rotateY(22deg) rotateZ(-12deg) translateY(4px)}
+.phone-stack:hover .phone:nth-child(3){transform:translateX(42%) rotateY(-22deg) rotateZ(12deg) translateY(10px)}
+.floating-chip{position:absolute;right:4%;bottom:4%;padding:0.6rem 0.9rem;border-radius:16px;background:rgba(8,8,20,0.9);border:1px solid rgba(168,85,247,0.55);color:var(--text-soft);font-size:0.8rem;display:flex;flex-direction:column;gap:0.22rem;box-shadow:0 14px 35px rgba(0,0,0,0.6);backdrop-filter:blur(10px);animation:float 4s ease-in-out infinite}
+[data-theme="light"] .floating-chip{background:rgba(255,255,255,0.94);border-color:rgba(127,29,29,0.65);box-shadow:0 14px 28px rgba(148,27,39,0.18)}
+.floating-chip span:first-child{text-transform:uppercase;letter-spacing:0.18em;font-size:0.65rem;color:var(--muted)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media (max-width:900px){
+.hero{grid-template-columns:minmax(0,1fr);padding-top:1.2rem}
+.hero-visual{order:-1}
+}
+.overview-body{margin-top:2.4rem}
+.callout{border-radius:var(--radius-lg);padding:2.4rem 2.6rem;background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(249,115,115,0.25));border:2px solid var(--accent-strong);box-shadow:0 18px 40px rgba(168,85,247,0.4),0 0 60px rgba(168,85,247,0.2);margin-bottom:2.4rem;position:relative;overflow:hidden}
+.callout::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(168,85,247,0.4),transparent 60%);pointer-events:none}
+[data-theme="light"] .callout{background:linear-gradient(135deg,rgba(127,29,29,0.2),rgba(255,231,223,0.9));border-color:var(--accent-strong)}
+.callout p{color:var(--text);font-size:1.15rem;font-weight:600;line-height:1.6;position:relative;z-index:1}
+.overview-grid{margin-top:2rem;gap:2.4rem}
+.bullet-list{list-style:none;display:grid;gap:0.85rem}
+.bullet-list li{position:relative;padding-left:1.4rem;font-size:0.98rem;color:var(--text-soft)}
+.bullet-list li::before{content:"";position:absolute;left:0;top:0.55rem;width:7px;height:7px;border-radius:999px;background:linear-gradient(120deg,var(--accent-strong),var(--accent-alt))}
+.highlight-column{border-radius:var(--radius-lg);padding:1.6rem 1.7rem 1.4rem;background:radial-gradient(circle at top,rgba(168,85,247,0.2),rgba(9,9,20,0.96));border:1px solid rgba(255,255,255,0.08);display:grid;gap:1.1rem}
+[data-theme="light"] .highlight-column{background:radial-gradient(circle at top,rgba(127,29,29,0.12),#FFFFFF)}
+.highlight-row-label{font-size:0.76rem;text-transform:uppercase;letter-spacing:0.2em;color:var(--muted);margin-bottom:0.25rem}
+.highlight-row-text{font-size:0.94rem}
+.two-col-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:2.3rem;margin-top:2.3rem;justify-items:center}
+@media (max-width:880px){.two-col-grid{grid-template-columns:minmax(0,1fr)}}
+.note-wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.4rem;max-width:800px}
+.note{border-radius:14px;padding:1.3rem 1.3rem 1.2rem;background:linear-gradient(145deg,#F97373,#FDBA74);color:#1E1E1E;font-size:0.92rem;box-shadow:0 10px 25px rgba(0,0,0,0.25);transform-origin:center;transform:rotate(-1deg);transition:transform 300ms ease-out}
+.note:nth-child(2){transform:rotate(1.2deg)}
+.note:nth-child(3){transform:rotate(-0.6deg)}
+.note:hover{transform:rotate(0deg) scale(1.05);box-shadow:0 15px 35px rgba(0,0,0,0.35)}
+[data-theme="light"] .note{box-shadow:0 12px 20px rgba(248,113,113,0.35)}
+.note-heading{font-weight:700;font-size:0.96rem;margin-bottom:0.5rem}
+.problem-grid{margin-top:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.4rem}
+.problem-card{border-radius:var(--radius-md);padding:1.25rem 1.3rem 1.1rem;background:var(--surface);border:1px solid var(--border-subtle);transition:transform var(--transition-med),box-shadow var(--transition-med),border-color var(--transition-fast)}
+.problem-card:hover{transform:translateY(-4px);border-color:rgba(168,85,247,0.7);box-shadow:var(--shadow-soft)}
+.problem-title{font-size:0.98rem;font-weight:600;margin-bottom:0.4rem}
+.problem-card ul{list-style:none;font-size:0.9rem;color:var(--text-soft)}
+.problem-card li{padding-left:1.1rem;position:relative;margin-bottom:0.35rem}
+.problem-card li::before{content:"›";position:absolute;left:0;top:0;color:var(--accent-strong);opacity:0.9}
+.insights-list{list-style:none;margin-top:1.5rem;display:grid;gap:0.75rem;font-size:0.93rem}
+.insights-list li{padding-left:1.4rem;position:relative}
+.insights-list li::before{content:"→";position:absolute;left:0;top:0;color:var(--accent-strong)}
+.comp-table-wrapper{margin-top:1.8rem;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-subtle);background:radial-gradient(circle at top,rgba(168,85,247,0.18),rgba(9,9,20,0.98))}
+[data-theme="light"] .comp-table-wrapper{background:radial-gradient(circle at top,rgba(127,29,29,0.08),#FFFFFF)}
+table.competitor-table{width:100%;border-collapse:collapse;font-size:0.9rem}
+.competitor-table thead{background:rgba(0,0,0,0.45)}
+[data-theme="light"] .competitor-table thead{background:rgba(127,29,29,0.08)}
+.competitor-table th,.competitor-table td{padding:0.9rem 1rem;text-align:left;vertical-align:top}
+.competitor-table th{font-size:0.82rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border-subtle)}
+.competitor-table td{border-top:1px solid rgba(255,255,255,0.05)}
+[data-theme="light"] .competitor-table td{border-top-color:rgba(0,0,0,0.04)}
+.competitor-name{font-weight:600;margin-bottom:0.35rem;color:var(--text)}
+.competitor-tag{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted)}
+.persona-grid{margin-top:2.1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.6rem}
+.persona-card{border-radius:var(--radius-lg);padding:1.6rem 1.6rem 1.4rem;background:radial-gradient(circle at top left,rgba(168,85,247,0.22),rgba(12,10,28,0.98));border:1px solid var(--border-subtle);display:grid;gap:1rem;position:relative;overflow:hidden}
+[data-theme="light"] .persona-card{background:radial-gradient(circle at top left,rgba(127,29,29,0.12),#FFFFFF)}
+.persona-card::before{content:"";position:absolute;inset:-40% auto auto -40%;width:160px;height:160px;background:radial-gradient(circle,rgba(168,85,247,0.35),transparent 55%);opacity:0.4;pointer-events:none}
+.persona-header{display:flex;align-items:center;justify-content:space-between;gap:0.8rem;position:relative;z-index:1}
+.persona-heading-left{display:flex;align-items:center;gap:0.8rem}
+.persona-avatar{width:48px;height:48px;border-radius:999px;background:radial-gradient(circle at 30% 0,#F97373,#A855F7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;color:#05040A;box-shadow:0 10px 26px rgba(0,0,0,0.6)}
+.persona-name{font-weight:600;font-size:1.05rem}
+.persona-meta{font-size:0.84rem;color:var(--muted)}
+.persona-tag{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.16em;color:var(--muted)}
+.persona-icon-row{display:flex;gap:1rem;justify-content:space-around;padding:0.8rem 0;position:relative;z-index:1}
+.persona-icon-item{display:flex;flex-direction:column;align-items:center;gap:0.4rem}
+.persona-icon-circle{width:42px;height:42px;border-radius:999px;background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.persona-icon-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+.persona-body{position:relative;z-index:1;display:grid;gap:0.9rem}
+.persona-detail{background:rgba(0,0,0,0.2);border-radius:10px;padding:0.9rem 1rem;border:1px solid rgba(255,255,255,0.05)}
+[data-theme="light"] .persona-detail{background:rgba(255,255,255,0.5);border-color:rgba(0,0,0,0.06)}
+.persona-detail-label{font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--accent-strong);margin-bottom:0.35rem}
+.persona-detail p{font-size:0.88rem;color:var(--text-soft);margin:0}
+.user-interviews-section{margin-top:3.2rem}
+.user-interviews-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.8rem;margin-top:1.8rem}
+.interview-card{border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-subtle);background:var(--surface);transition:transform var(--transition-med),box-shadow var(--transition-med)}
+.interview-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-soft)}
+.interview-img{width:100%;height:240px;object-fit:cover;display:block}
+.interview-caption{padding:1.2rem 1.3rem;font-size:0.9rem;color:var(--text-soft)}
+.user-flow{margin-top:2.6rem}
+.uf-diagram-visual{max-width:900px;margin:0 auto;padding:2.4rem 2rem 2.8rem;border-radius:var(--radius-xl);background:radial-gradient(circle at top,rgba(168,85,247,0.22),rgba(12,10,23,0.98));border:1px solid rgba(255,255,255,0.08);position:relative}
+[data-theme="light"] .uf-diagram-visual{background:radial-gradient(circle at top,rgba(127,29,29,0.12),#FFFFFF)}
+.uf-visual-label{text-align:center;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.22em;color:var(--muted);margin-bottom:1.8rem}
+.uf-flow-container{display:flex;flex-direction:column;align-items:center;gap:0.8rem}
+.uf-step{display:flex;justify-content:center}
+.uf-step-node{min-width:220px;padding:1rem 1.4rem;border-radius:12px;background:var(--surface);border:2px solid rgba(255,255,255,0.12);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;gap:0.6rem}
+[data-theme="light"] .uf-step-node{background:#FFFFFF;border-color:rgba(0,0,0,0.12)}
+.uf-step-node.primary{background:linear-gradient(135deg,var(--accent-strong),var(--accent));border:none;box-shadow:0 10px 30px rgba(168,85,247,0.5)}
+.uf-step-node.success{background:#15803D;border-color:#22C55E;color:#ECFDF5}
+.uf-step-node.error{background:#B91C1C;border-color:#EF4444;color:#FEF2F2}
+.uf-step-icon{font-size:1.3rem}
+.uf-step-text{font-size:0.9rem;font-weight:500;color:var(--text)}
+.uf-step-node.primary .uf-step-text{color:#FFFFFF;font-weight:600}
+.uf-step-node.success .uf-step-text,.uf-step-node.error .uf-step-text{color:inherit}
+.uf-substep{font-size:0.78rem;color:var(--muted);display:block;margin-top:0.2rem}
+.uf-arrow{font-size:1.6rem;color:rgba(148,163,184,0.7);line-height:1}
+.uf-split{width:100%;display:flex;flex-direction:column;align-items:center;gap:0.8rem}
+.uf-split-line{width:2px;height:24px;background:rgba(148,163,184,0.5)}
+.uf-split-branches{display:grid;grid-template-columns:1fr 1fr;gap:2rem;width:100%;max-width:600px}
+.uf-branch{display:flex;flex-direction:column;align-items:center;gap:0.8rem}
+.uf-outcomes{display:flex;gap:1.4rem;margin-top:0.6rem}
+.journey-ia-grid{margin-top:2.6rem;display:grid;grid-template-columns:minmax(0,1fr);gap:2.4rem}
+@media (max-width:880px){.journey-ia-grid{grid-template-columns:minmax(0,1fr)}}
+.journey-card-visual,.ia-card-visual{border-radius:var(--radius-lg);padding:1.8rem 1.8rem 1.6rem;background:var(--surface);border:1px solid var(--border-subtle)}
+.journey-visual-container{margin-top:1.2rem;display:flex;flex-direction:column;gap:1rem}
+.journey-phase{display:grid;grid-template-columns:auto 1fr;gap:1rem;padding:1.2rem;border-radius:12px;background:rgba(168,85,247,0.08);border:1px solid rgba(255,255,255,0.08);transition:transform 300ms ease,box-shadow 300ms ease}
+.journey-phase:hover{transform:translateX(4px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.journey-phase.highlight{background:rgba(168,85,247,0.2);border-color:var(--accent-strong);box-shadow:0 0 20px rgba(168,85,247,0.3)}
+.journey-phase-number{width:36px;height:36px;border-radius:999px;background:linear-gradient(135deg,var(--accent-strong),var(--accent-alt));color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0}
+.journey-phase-content{display:grid;gap:0.4rem}
+.journey-phase-title{font-size:1rem;font-weight:600;color:var(--text)}
+.journey-phase-content p{font-size:0.88rem;color:var(--text-soft);margin:0}
+.journey-emotion{font-size:0.85rem;color:var(--accent-strong);font-weight:500;margin-top:0.2rem}
+.journey-connector{text-align:center;font-size:1.8rem;color:var(--accent-strong);line-height:1}
+.ia-visual-tree{margin-top:1.2rem}
+.ia-node{margin-bottom:1rem}
+.ia-node.root{border:2px solid var(--accent-strong);border-radius:12px;padding:1.2rem;background:rgba(168,85,247,0.12)}
+.ia-node-label{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem}
+.ia-children{display:grid;gap:0.6rem;margin-left:1.2rem;border-left:2px solid rgba(148,163,184,0.3);padding-left:1.2rem}
+.ia-node:not(.root){padding:0.9rem 1rem;border-radius:10px;background:rgba(168,85,247,0.08);border:1px solid rgba(255,255,255,0.08)}
+.ia-child-item{font-size:0.86rem;color:var(--text-soft);padding:0.5rem 0.8rem;border-radius:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05)}
+[data-theme="light"] .ia-child-item{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.06)}
+.timeline{margin-top:2.6rem;border-radius:var(--radius-lg);padding:1.7rem 1.6rem 1.8rem;background:var(--surface);border:1px solid var(--border-subtle);display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.3rem}
+.timeline-item{border-radius:14px;padding:1rem 1rem 0.9rem;border:1px dashed rgba(255,255,255,0.16)}
+.timeline-item.highlight{border-style:solid;border-color:var(--accent-strong);background:radial-gradient(circle at top,rgba(168,85,247,0.35),rgba(12,10,30,0.98))}
+[data-theme="light"] .timeline-item.highlight{background:radial-gradient(circle at top,rgba(127,29,29,0.25),rgba(255,237,230,0.98))}
+.timeline-chip{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.16em;color:var(--muted);margin-bottom:0.4rem}
+.timeline-label{font-size:0.96rem;font-weight:600;margin-bottom:0.3rem}
+.timeline-body{font-size:0.88rem;color:var(--text-soft)}
+.brand-grid{margin-top:2.4rem;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr);gap:2.3rem;align-items:stretch}
+@media (max-width:880px){.brand-grid{grid-template-columns:minmax(0,1fr)}}
+.palette{border-radius:var(--radius-lg);padding:1.6rem 1.5rem;background:var(--surface);border:1px solid var(--border-subtle);display:grid;gap:1.1rem}
+.swatch-row{display:flex;gap:0.9rem;flex-wrap:wrap}
+.swatch{border-radius:16px;padding:0.65rem 0.8rem;min-width:130px;display:grid;gap:0.15rem;border:1px solid rgba(255,255,255,0.1);font-size:0.8rem;color:#020617}
+.swatch-label{font-weight:600}
+.swatch-hex{opacity:0.9}
+.swatch.dark{color:#E5E7EB}
+.type-card{border-radius:var(--radius-lg);padding:1.6rem 1.5rem;background:var(--surface-soft);border:1px solid var(--border-subtle);display:grid;gap:0.7rem}
+.type-big{font-family:'Playfair Display',serif;font-size:2rem;letter-spacing:0.08em;text-transform:uppercase}
+.type-line{font-size:0.9rem;color:var(--muted)}
+.type-samples{margin-top:0.6rem;display:grid;gap:0.35rem}
+.type-samples p{font-size:0.9rem;color:var(--text-soft)}
+.subheading{font-size:1.2rem;font-weight:600;margin-bottom:0.8rem}
+#screens{padding-bottom:6rem}
+.carousel-wrapper{margin-top:2.6rem;background:var(--surface);border-radius:var(--radius-xl);border:1px solid var(--border-subtle);padding:1.6rem 1.4rem 1.8rem;position:relative;overflow:hidden}
+.carousel-inner{display:flex;align-items:center;gap:1.4rem}
+.carousel-track{flex:1;overflow:hidden}
+.carousel-strip{display:flex;transition:transform 360ms ease-out}
+.carousel-slide{min-width:100%;display:flex;justify-content:center;padding:0.5rem 0.6rem 0.2rem}
+.carousel-phone{width:min(260px,70vw);border-radius:30px;overflow:hidden;background:#000;box-shadow:var(--shadow-soft);border:1px solid rgba(255,255,255,0.18)}
+.carousel-phone img{width:100%;height:100%;object-fit:cover;display:block}
+.carousel-aside{max-width:320px;display:grid;gap:0.9rem}
+.carousel-step-label{text-transform:uppercase;letter-spacing:0.16em;font-size:0.75rem;color:var(--muted)}
+.carousel-title{font-size:1.1rem;font-weight:600}
+.carousel-body{font-size:0.92rem;color:var(--text-soft)}
+.carousel-dots{display:flex;gap:0.5rem;margin-top:0.5rem}
+.carousel-dot{width:9px;height:9px;border-radius:999px;background:var(--border-subtle);cursor:pointer;border:none;padding:0;transition:background var(--transition-fast),transform var(--transition-fast),width var(--transition-fast)}
+.carousel-dot.active{width:18px;background:linear-gradient(90deg,var(--accent-strong),var(--accent-alt));transform:translateY(-1px)}
+.carousel-controls-row{display:flex;align-items:center;gap:0.55rem;margin-top:0.7rem}
+.carousel-controls{width:36px;height:36px;border-radius:999px;border:1px solid var(--border-subtle);background:var(--surface-soft);display:inline-flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-soft);cursor:pointer;transition:background var(--transition-fast),transform var(--transition-fast),border-color var(--transition-fast),color var(--transition-fast)}
+.carousel-controls:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);transform:translateY(-1px)}
+@media (max-width:880px){
+.carousel-inner{flex-direction:column;align-items:stretch}
+.carousel-aside{max-width:none}
+.uf-split-branches{grid-template-columns:1fr;gap:1rem}
+.journey-visual-container{gap:0.6rem}
+.journey-connector{font-size:1.4rem}
+}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity 600ms ease-out,transform 600ms ease-out}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.back-footer{margin-top:2.2rem;font-size:0.88rem;color:var(--muted);text-align:center}
+.back-footer a{color:var(--accent-strong);text-decoration:none}
+.back-footer a
+</style>
+</head>
+<body>
+<nav id="siteNav">
+<div class="nav-inner">
+<div class="nav-left">
+<a href="index.html" class="back-link"><span class="icon">←</span><span>Back to portfolio</span></a>
+<div class="nav-title">Noogin Nooks · Case Study</div>
+</div>
+<div class="nav-right">
+<ul class="nav-links" id="navLinks">
+<li><a href="#overview" class="nav-link">Overview</a></li>
+<li><a href="#research" class="nav-link">Research</a></li>
+<li><a href="#process" class="nav-link">Flows & Process</a></li>
+<li><a href="#brand" class="nav-link">Brand</a></li>
+<li><a href="#screens" class="nav-link">Screens</a></li>
+</ul>
+<button class="theme-toggle" id="themeToggle" type="button"><span class="icon" id="themeIcon">🌙</span><span id="themeLabel">Dark mode</span></button>
+<button class="nav-toggle" id="navToggle" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+</div>
+</div>
+</nav>
+<main>
+<section id="top" class="hero reveal">
+<div class="hero-copy">
+<div class="pill hero-role-pill"><span>UX · UI · Product Thinking</span></div>
+<h1><span>Noogin</span> <span class="accent">Nooks</span><br/>Personalized learning companion</h1>
+<p class="hero-lede">An AI-first learning companion that adapts lessons to each student's style – auditory, visual, linguistic, or kinesthetic – delivering short, curriculum-aligned micro-lessons that fit into real school days.</p>
+<div class="hero-meta">
+<div class="hero-meta-block"><div class="hero-meta-label">Role</div><div class="hero-meta-value"> UX Research / UI Designer</div></div>
+<div class="hero-meta-block"><div class="hero-meta-label">Timeline</div><div class="hero-meta-value">6 weeks · Case study</div></div>
+<div class="hero-meta-block"><div class="hero-meta-label">Focus</div><div class="hero-meta-value">Learning styles · Micro-sessions · AI guidance</div></div>
+</div>
+<p class="hero-footnote">The case study below walks through research, user flows, brand system, and final app screens.</p>
+</div>
+<div class="hero-visual">
+<div class="hero-orbit"></div>
+<div class="phone-stack">
+<div class="phone"><img src="aa.png" alt="Noogin Nooks onboarding mockup"></div>
+<div class="phone"><img src="bb.png" alt="Noogin Nooks quiz mockup"></div>
+<div class="phone"><img src="cc.png" alt="Noogin Nooks results mockup"></div>
+</div>
+<div class="floating-chip"><span>Adaptive lesson engine</span><span>Detects learning style in under 8 questions and shapes the session around it.</span></div>
+</div>
+</section>
+<section id="overview" class="reveal">
+<p class="section-label">01 · Overview</p>
+<h2>Why Noogin Nooks?</h2>
+<p class="section-subtitle">Students are often given one-size-fits-all content. Noogin Nooks explores what happens when the format of learning is as adaptive as the topics themselves.</p>
+<div class="overview-body">
+<div class="callout"><p><strong>Problem statement ·</strong> How might we increase student engagement and retention by delivering curriculum-aligned micro-lessons in formats that match each student's learning style?</p></div>
+<div class="grid-2 overview-grid">
+<div>
+<ul class="bullet-list">
+<li>Generic learning content rarely considers how different students <strong>absorb information</strong>. Time is spent, but little sticks.</li>
+<li>During onboarding, students take a <strong>short quiz</strong> that detects their dominant learning preferences—visual, auditory, linguistic, or kinesthetic—along with confidence in each subject.</li>
+<li>Lessons are delivered as <strong>5–10 minute micro-sessions as well as long lessons</strong>: visuals & diagrams for visual learners, concise audio recaps for auditory learners, text + examples for linguistic learners, and quick hands-on prompts for kinesthetic learners.</li>
+<li>An AI mascot, <strong>Nook</strong>, guides each learner with friendly feedback, nudges, and suggestions to try alternate formats when attention drops.</li>
+</ul>
+</div>
+<div class="highlight-column">
+<div><div class="highlight-row-label">Users</div><div class="highlight-row-text">Students in classes 6–10, parents who want visibility into learning, and tutors who need a tool that complements their sessions.</div></div>
+<div><div class="highlight-row-label">Solution</div><div class="highlight-row-text">An onboarding quiz + adaptive content engine that assembles each lesson in the right format, plus a dashboard that surfaces progress and confidence across topics.</div></div>
+<div><div class="highlight-row-label">Constraints</div><div class="highlight-row-text">Mobile-first, low cognitive load, minimal onboarding friction, and modular content that can be reused across boards and curriculums.</div></div>
+</div>
+</div>
+</div>
+</section>
+<section id="research" class="reveal">
+<p class="section-label">02 · Research</p>
+<h2>Understanding the space</h2>
+<p class="section-subtitle">I combined competitor analysis, stakeholder mapping, and user interviews to understand where current ed-tech tools succeed—and where they fail students and parents.</p>
+<div class="two-col-grid">
+<div>
+<h3 class="subheading">Affinity themes</h3>
+<div class="note-wall">
+<div class="note"><div class="note-heading">Need a single hub</div><p>Students want <strong>one place</strong> where school topics, practice and recap material live together, instead of jumping across apps.</p></div>
+<div class="note"><div class="note-heading">Motivation & FOMO</div><p>They don't want to miss "important" concepts or exams. Visible streaks and progress give a sense of momentum.</p></div>
+<div class="note"><div class="note-heading">Parents want proof</div><p>Parents care less about fancy visuals and more about <strong>clear progress</strong>, time spent, and how to support at home.</p></div>
+</div>
+</div>
+</div>
+<h3 style="margin-top:2.4rem;">Research themes & problems</h3>
+<div class="problem-grid">
+<div class="problem-card"><div class="problem-title">Learning behaviour</div><ul><li>Short, structured sessions increase completion rates.</li><li>Format mismatch causes low retention even when time is spent.</li></ul></div>
+<div class="problem-card"><div class="problem-title">Parental needs</div><ul><li>Parents want simple progress metrics and suggestions for support at home.</li><li>They need reassurance that screen time is <strong>actually productive</strong>.</li></ul></div>
+<div class="problem-card"><div class="problem-title">Content gap</div><ul><li>Platforms optimise for content breadth, not for how it is delivered.</li><li>Opportunity: personalised micro-learning assembled from modular content blocks.</li></ul></div>
+</div>
+<h3 style="margin-top:2.4rem;">Key insights</h3>
+<ul class="insights-list">
+<li><strong>Short wins matter:</strong> Students respond better to 5–10 minute focused lessons than long lectures.</li>
+<li><strong>Format matters:</strong> Delivering the same concept in different formats significantly improves recall.</li>
+<li><strong>Parental trust:</strong> Simple dashboards and suggested home activities make parents more confident about the app.</li>
+</ul>
+<h3 style="margin-top:2.4rem;">Competitor analysis</h3>
+<div class="comp-table-wrapper">
+<table class="competitor-table">
+<thead><tr><th>Platform</th><th>Strengths</th><th>Gaps / Opportunities</th></tr></thead>
+<tbody>
+<tr><td><div class="competitor-name">Byju's</div><div class="competitor-tag">HIGH PRODUCTION VIDEO</div></td><td>Rich, animated explainers and gamified tests that feel premium and engaging for the first few sessions.</td><td>Long lessons, heavy app; limited control over format and session length. Overwhelming for students who just want a quick recap.</td></tr>
+<tr><td><div class="competitor-name">Khan Academy</div><div class="competitor-tag">FREE CONTENT LIBRARY</div></td><td>Clear explanations and huge coverage across subjects with reliable practice questions and progress tracking.</td><td>Primarily video + text; discovery feels like searching a library rather than being guided through a personalised path.</td></tr>
+<tr><td><div class="competitor-name">Unacademy / Vedantu</div><div class="competitor-tag">LIVE CLASSES</div></td><td>Coaching-style live sessions and doubt-solving tailored for exam prep, with strong teacher presence and community.</td><td>Focused on toppers and exams, not everyday learning habits. Limited support for micro-learning or exploring individual learning styles.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 style="margin-top:2.4rem;">User personas</h3>
+<div class="persona-grid">
+<article class="persona-card">
+<div class="persona-header">
+<div class="persona-heading-left">
+<div class="persona-avatar">R</div>
+<div><div class="persona-name">Riya · Grade 9</div><div class="persona-meta">Visual learner · CBSE board</div></div>
+</div>
+<div class="persona-tag">Student</div>
+</div>
+<div class="persona-icon-row">
+<div class="persona-icon-item"><div class="persona-icon-circle">🎯</div><div class="persona-icon-label">Goals</div></div>
+<div class="persona-icon-item"><div class="persona-icon-circle">😤</div><div class="persona-icon-label">Frustrations</div></div>
+<div class="persona-icon-item"><div class="persona-icon-circle">✨</div><div class="persona-icon-label">Needs</div></div>
+</div>
+<div class="persona-body">
+<div class="persona-detail"><div class="persona-detail-label">Goals</div><p>Understand concepts well enough to explain them to friends; keep up with school tests.</p></div>
+<div class="persona-detail"><div class="persona-detail-label">Frustrations</div><p>Long videos lose her attention; finds it hard to connect formulas to diagrams.</p></div>
+<div class="persona-detail"><div class="persona-detail-label">Needs</div><p>Short visual breakdowns, colour-coded summaries, and a clear "what to study today" list.</p></div>
+</div>
+</article>
+<article class="persona-card">
+<div class="persona-header">
+<div class="persona-heading-left">
+<div class="persona-avatar">A</div>
+<div><div class="persona-name">Arjun · Grade 8</div><div class="persona-meta">Kinesthetic learner · ICSE board</div></div>
+</div>
+<div class="persona-tag">Student</div>
+</div>
+<div class="persona-icon-row">
+<div class="persona-icon-item"><div class="persona-icon-circle">🎯</div><div class="persona-icon-label">Goals</div></div>
+<div class="persona-icon-item"><div class="persona-icon-circle">😤</div><div class="persona-icon-label">Frustrations</div></div>
+<div class="persona-icon-item"><div class="persona-icon-circle">✨</div><div class="persona-icon-label">Needs</div></div>
+</div>
+<div class="persona-body">
+<div class="persona-detail"><div class="persona-detail-label">Goals</div><p>Improve science grades without extra tuition; enjoy learning instead of memorising.</p></div>
+<div class="persona-detail"><div class="persona-detail-label">Frustrations</div><p>Gets restless in long theory classes; forgets what he crammed the night before.</p></div>
+<div class="persona-detail"><div class="persona-detail-label">Needs</div><p>Quick activities, challenges, and experiments he can try at home with instant feedback.</p></div>
+</div>
+</article>
+</div>
+<div class="user-interviews-section">
+<h3 class="subheading">User interviews</h3>
+<p style="margin-top:0.8rem;font-size:0.95rem;color:var(--text-soft);">Conducted in-depth interviews with students and parents to understand pain points, learning habits, and expectations from educational apps.</p>
+<div class="user-interviews-grid">
+<div class="interview-card"><img src="qa.png" alt="User interview session 1" class="interview-img"><div class="interview-caption">Interview sessions helped uncover how students engage with digital learning tools and where they lose interest.</div></div>
+<div class="interview-card"><img src="qa1.png" alt="User interview session 2" class="interview-img"><div class="interview-caption">Parents shared insights on tracking progress and the need for transparent learning outcomes.</div></div>
+</div>
+</div>
+</section>
+<section id="process" class="reveal visible">
+<p class="section-label">03 · Flows & process</p>
+<h2>From onboarding to learning loop</h2>
+<p class="section-subtitle">I mapped the journey from installation to first "aha" moment, ensuring that students experience a clear value story within the first few minutes.</p>
+<div class="user-flow">
+<div class="uf-diagram-visual">
+<div class="uf-visual-label">Onboarding flow</div>
+<div class="uf-flow-container">
+<div class="uf-step"><div class="uf-step-node primary"><div class="uf-step-icon">🚀</div><div class="uf-step-text">Noogin Nooks</div></div></div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">User onboarding</div></div></div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Onboarding quiz<br/><span class="uf-substep">(learning style + confidence)</span></div></div></div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Profile & goal setup</div></div></div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Home – recommended micro-session</div></div></div>
+<div class="uf-split">
+<div class="uf-split-line"></div>
+<div class="uf-split-branches">
+<div class="uf-branch">
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Format-adapted lesson player</div></div></div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Quick check / mini quiz</div></div></div>
+</div>
+<div class="uf-branch">
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Explore other subjects</div></div></div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Pick next topic</div></div></div>
+</div>
+</div>
+</div>
+<div class="uf-outcomes">
+<div class="uf-step"><div class="uf-step-node success"><div class="uf-step-icon">✓</div><div class="uf-step-text">Concept understood</div></div></div>
+<div class="uf-step"><div class="uf-step-node error"><div class="uf-step-icon">✕</div><div class="uf-step-text">Needs another format</div></div></div>
+</div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Progress dashboard & suggestions</div></div></div>
+<div class="uf-arrow">↓</div>
+<div class="uf-step"><div class="uf-step-node"><div class="uf-step-text">Back to home · next micro-session</div></div></div>
+</div>
+</div>
+</div>
+<div class="journey-ia-grid">
+<div class="journey-card-visual">
+<h3 class="subheading">User journey mapping</h3>
+<div class="journey-visual-container">
+<div class="journey-phase"><div class="journey-phase-number">1</div><div class="journey-phase-content"><div class="journey-phase-title">Discover</div><p>Hears about Noogin Nooks from a friend or parent and expects "another study app".</p><div class="journey-emotion">Emotion - Skeptical</div></div></div>
+<div class="journey-connector">→</div>
+<div class="journey-phase"><div class="journey-phase-number">2</div><div class="journey-phase-content"><div class="journey-phase-title">Onboard</div><p>Takes the quiz; feels curious when the questions feel relatable and quick.</p><div class="journey-emotion">Emotion - Curious</div></div></div>
+<div class="journey-connector">→</div>
+<div class="journey-phase highlight"><div class="journey-phase-number">3</div><div class="journey-phase-content"><div class="journey-phase-title">First lesson</div><p>Experiences a short session in their preferred format and finishes it in one go.</p><div class="journey-emotion">Emotion - Engaged</div></div></div>
+<div class="journey-connector">→</div>
+<div class="journey-phase"><div class="journey-phase-number">4</div><div class="journey-phase-content"><div class="journey-phase-title">Reinforce</div><p>Sees streaks and confidence bars move, building trust that the time was worth it.</p><div class="journey-emotion">Emotion - Motivated</div></div></div>
+<div class="journey-connector">→</div>
+<div class="journey-phase"><div class="journey-phase-number">5</div><div class="journey-phase-content"><div class="journey-phase-title">Return</div><p>Comes back for the next suggested session because the effort needed feels manageable.</p><div class="journey-emotion">Emotion - Confident</div></div></div>
+</div>
+</div>
+<div class="ia-card-visual">
+<h3 class="subheading">Information architecture</h3>
+<p style="margin-top:0.8rem;font-size:0.95rem;color:var(--text-soft);">The app structure prioritizes quick access to lessons while maintaining clear navigation across subjects and progress tracking.</p>
+<div style="margin-top:1.4rem;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-subtle);">
+<img src="infoarc.png" alt="Information architecture diagram" style="width:100%;display:block;">
+</div>
+</div>
+</div>
+<h3 style="margin-top:2.6rem;">Design timeline</h3>
+<div class="timeline">
+<div class="timeline-item"><div class="timeline-chip">Week 1</div><div class="timeline-label">Define</div><p class="timeline-body">Problem statement, objectives, USP, competitor scan.</p></div>
+<div class="timeline-item"><div class="timeline-chip">Week 2</div><div class="timeline-label">Empathise</div><p class="timeline-body">User interviews, affinity maps, journey mapping.</p></div>
+<div class="timeline-item highlight"><div class="timeline-chip">Weeks 3–4</div><div class="timeline-label">Ideate</div><p class="timeline-body">User flows, information architecture, early concepts for Nook (the mascot).</p></div>
+<div class="timeline-item"><div class="timeline-chip">Week 5</div><div class="timeline-label">Prototype</div><p class="timeline-body">High-fidelity screens, primary user flows.</p></div>
+<div class="timeline-item"><divclass="timeline-chip">Week 6</div><div class="timeline-label">Test & Iterate</div><p class="timeline-body">Usability sessions with students, quick iterations on copy and navigation.</p></div>
+</div>
+</section>
+<section id="brand" class="reveal">
+<p class="section-label">04 · Brand & system</p>
+<h2>Building a calm but energetic identity</h2>
+<p class="section-subtitle">Noogin Nooks needed to feel trustworthy for parents, but playful and energetic for students. The visual language balances a dark, focused space with bright accents.</p>
+<div class="brand-grid">
+<div class="palette">
+<h3 class="subheading">Colour system</h3>
+<p style="font-size:0.9rem;">Dark mode uses a deep indigo base with purple highlights; light mode switches to a warm maroon accent, mirroring school notebooks and textbook margins.</p>
+<div class="swatch-row" style="margin-top:0.9rem;">
+<div class="swatch dark" style="background:#8EABE1;"><div class="swatch-label">Background</div><div class="swatch-hex">#8EABE1</div><div>Focus, cinema-like ambience.</div></div>
+<div class="swatch dark" style="background:#E05723;"><div class="swatch-label">Surface</div><div class="swatch-hex">#E05723</div><div>Cards & panels.</div></div>
+<div class="swatch dark" style="background:#696935;"><div class="swatch-label">Accent · Purple</div><div class="swatch-hex">#696935</div><div>Primary CTAs & highlights.</div></div>
+<div class="swatch" style="background:#F4B426;"><div class="swatch-label">Light mode base</div><div class="swatch-hex">#F4B426</div><div>Warm, paper-like background.</div></div>
+<div class="swatch" style="background:#F3D1D0;color:#F3D1D0;"><div class="swatch-label">Accent · Maroon</div><div class="swatch-hex">#F3D1D0</div><div>Calls to action in light mode.</div></div>
+</div>
+</div>
+<div class="type-card">
+<h3 class="subheading">Typography</h3>
+<div class="type-big">Noogin Nooks</div>
+<div class="type-line">Playfair Display for titles · Space Grotesk for interface text</div>
+<div class="type-samples">
+<p><strong>Heading:</strong> THE QUICK BROWN FOX JUMPS OVER</p>
+<p><strong>Body:</strong> The quick brown fox jumps over the lazy dog 0123456789.</p>
+<p><strong>UI labels:</strong> 12 min lesson · Start quiz · Continue where you left off</p>
+</div>
+</div>
+</div>
+<div style="margin-top:3.2rem;" class="reveal">
+<h3 class="subheading">Meet Nook – The learning companion</h3>
+<p style="margin-top:0.8rem;font-size:0.95rem;color:var(--text-soft);max-width:680px;">Nook is the friendly AI mascot that guides students through their learning journey. Designed to feel approachable and encouraging, Nook adapts its tone based on student progress and provides contextual nudges when needed.</p>
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:2.4rem;align-items:center;margin-top:2rem;">
+<div>
+<ul class="bullet-list">
+<li><strong>Personality:</strong> Friendly, patient, and subtly motivating without being pushy or infantilizing.</li>
+<li><strong>Role:</strong> Suggests next steps, celebrates wins, and gently encourages trying alternate formats when a concept isn't clicking.</li>
+<li><strong>Visual design:</strong> Soft, rounded character with warm gradient colors that match the app's accent palette.</li>
+<li><strong>Tone:</strong> Conversational and age-appropriate, adapting language for different grade levels.</li>
+</ul>
+</div>
+<div style="display:flex;justify-content:center;align-items:center;">
+<div style="max-width:280px;border-radius:var(--radius-xl);overflow:hidden;border:1px solid var(--border-subtle);box-shadow:var(--shadow-soft);">
+<img src="mascot.png" alt="Nook mascot character" style="width:100%;display:block;">
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="screens" class="reveal">
+<p class="section-label">05 · App screens</p>
+<h2>From onboarding to practice</h2>
+<p class="section-subtitle">A scrollable carousel that walks through the key parts of the experience. The description on the right updates with each screen.</p>
+<div class="carousel-wrapper">
+<div class="carousel-inner">
+<div class="carousel-track">
+<div class="carousel-strip" id="carouselStrip">
+<div class="carousel-slide"><div class="carousel-phone"><img src="aa.png" alt="Onboarding screen"></div></div>
+<div class="carousel-slide"><div class="carousel-phone"><img src="bb.png" alt="Onboarding quiz screen"></div></div>
+<div class="carousel-slide"><div class="carousel-phone"><img src="cc.png" alt="Learning style results screen"></div></div>
+<div class="carousel-slide"><div class="carousel-phone"><img src="dd.png" alt="Practice & projects screen"></div></div>
+<div class="carousel-slide"><div class="carousel-phone"><img src="ee.png" alt="Options and content styles screen"></div></div>
+</div>
+</div>
+<aside class="carousel-aside">
+<div class="carousel-step-label" id="carouselStepLabel"></div>
+<div class="carousel-title" id="carouselTitle"></div>
+<p class="carousel-body" id="carouselBody"></p>
+<div class="carousel-dots" id="carouselDots"></div>
+<div class="carousel-controls-row">
+<button class="carousel-controls" id="prevSlide" type="button" aria-label="Previous screen">‹</button>
+<button class="carousel-controls" id="nextSlide" type="button" aria-label="Next screen">›</button>
+</div>
+</aside>
+</div>
+</div>
+<div class="back-footer"><a href="index.html">← Back to portfolio</a></div>
+</section>
+</main>
+<script>
+const htmlEl=document.documentElement,themeToggle=document.getElementById('themeToggle'),themeIcon=document.getElementById('themeIcon'),themeLabel=document.getElementById('themeLabel');function applyTheme(t){htmlEl.setAttribute('data-theme',t);t==='light'?(themeIcon.textContent='☀️',themeLabel.textContent='Light mode'):(themeIcon.textContent='🌙',themeLabel.textContent='Dark mode')}const storedTheme=window.localStorage.getItem('noogin-theme');(storedTheme==='light'||storedTheme==='dark')?applyTheme(storedTheme):applyTheme('dark');themeToggle.addEventListener('click',()=>{const c=htmlEl.getAttribute('data-theme')||'dark',n=c==='dark'?'light':'dark';applyTheme(n);window.localStorage.setItem('noogin-theme',n)});const nav=document.getElementById('siteNav'),navToggle=document.getElementById('navToggle'),navLinks=document.getElementById('navLinks'),navLinkItems=document.querySelectorAll('.nav-link');navToggle.addEventListener('click',()=>{navLinks.classList.toggle('open');navToggle.classList.toggle('open')});navLinkItems.forEach(link=>{link.addEventListener('click',()=>{navLinks.classList.remove('open');navToggle.classList.remove('open')})});window.addEventListener('scroll',()=>{window.scrollY>80?nav.classList.add('scrolled'):nav.classList.remove('scrolled');let currentId='';document.querySelectorAll('main section[id]').forEach(section=>{const top=section.offsetTop-140;if(window.scrollY>=top)currentId=section.id});navLinkItems.forEach(link=>{link.classList.remove('active');const hrefId=link.getAttribute('href').slice(1);if(hrefId===currentId)link.classList.add('active')})});const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add('visible')})},{threshold:0.18,rootMargin:'0px 0px -80px 0px'});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));document.querySelectorAll('a[href^="#"]').forEach(anchor=>{anchor.addEventListener('click',function(e){const target=document.querySelector(this.getAttribute('href'));if(!target)return;e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'})})});const carouselSlides=[{step:'Step 1 · First impression',title:'Onboarding screen',body:'A bold, colourful hero introduces Noogin Nooks as a friendly companion rather than a strict study app.'},{step:'Step 2 · Learning style',title:'Onboarding quiz',body:'Six playful, low-friction questions identify whether the student leans visual, auditory, linguistic, or kinesthetic.'},{step:'Step 3 · Self-awareness',title:'Your results',body:'The results screen explains the learner type in simple language and shows how the app will adapt sessions.'},{step:'Step 4 · Doing, not just watching',title:'Practice & projects',body:'Students can jump into small projects and practice tasks tailored to their style, building confidence quickly.'},{step:'Step 5 · Choice & exploration',title:'Learning options',body:'A catalogue of lessons in different formats lets students explore topics in the way that feels most natural.'}];const strip=document.getElementById('carouselStrip'),dotsContainer=document.getElementById('carouselDots'),stepLabelEl=document.getElementById('carouselStepLabel'),titleEl=document.getElementById('carouselTitle'),bodyEl=document.getElementById('carouselBody'),prevBtn=document.getElementById('prevSlide'),nextBtn=document.getElementById('nextSlide'),carouselWrapper=document.querySelector('.carousel-wrapper');let currentSlide=0,autoTimer=null;carouselSlides.forEach((slide,index)=>{const dot=document.createElement('button');dot.className='carousel-dot';dot.type='button';dot.setAttribute('aria-label',`Go to screen ${index+1}`);dot.addEventListener('click',()=>goToSlide(index));dotsContainer.appendChild(dot)});function goToSlide(index){const total=carouselSlides.length;currentSlide=(index+total)%total;strip.style.transform=`translateX(-${currentSlide*100}%)`;const slideData=carouselSlides[currentSlide];stepLabelEl.textContent=slideData.step;titleEl.textContent=slideData.title;bodyEl.textContent=slideData.body;Array.from(dotsContainer.children).forEach((dot,i)=>{dot.classList.toggle('active',i===currentSlide)})}function startAutoAdvance(){stopAutoAdvance();autoTimer=setInterval(()=>{goToSlide(currentSlide+1)},6500)}function stopAutoAdvance(){if(autoTimer){clearInterval(autoTimer);autoTimer=null}}prevBtn.addEventListener('click',()=>{goToSlide(currentSlide-1);startAutoAdvance()});nextBtn.addEventListener('click',()=>{goToSlide(currentSlide+1);startAutoAdvance()});if(carouselWrapper){carouselWrapper.addEventListener('mouseenter',stopAutoAdvance);carouselWrapper.addEventListener('mouseleave',startAutoAdvance)}goToSlide(0);startAutoAdvance();
+</script>
+</body>
+</html>

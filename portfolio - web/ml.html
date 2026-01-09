@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blinkit Order Prediction – ML Project</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+/* ======================
+   THEME SYSTEM (NOOGIN)
+====================== */
+:root{
+--bg:#05040A;
+--bg-alt:#0C0A17;
+--surface:#111024;
+--surface-soft:#181834;
+--border-subtle:rgba(255,255,255,0.08);
+--text:#F5F3FF;
+--text-soft:#C9C7E6;
+--muted:#8582AD;
+--accent:#A855F7;
+--accent-soft:rgba(168,85,247,0.18);
+--accent-strong:#C084FC;
+--shadow-soft:0 18px 45px rgba(0,0,0,0.55);
+--radius-xl:28px;
+--radius-lg:20px;
+--radius-md:14px;
+}
+
+html,body{
+background:radial-gradient(circle at top,#181834 0,var(--bg) 40%);
+font-family:'Space Grotesk',system-ui,sans-serif;
+color:var(--text);
+scroll-behavior:smooth;
+}
+
+section{
+padding:5rem min(6vw,4rem);
+max-width:1200px;
+margin:0 auto;
+}
+
+h1,h2,h3,h4{
+font-family:'Playfair Display',serif;
+letter-spacing:0.06em;
+text-transform:uppercase;
+}
+
+h2{
+font-size:clamp(2.2rem,3vw,3rem);
+margin-bottom:2.5rem;
+}
+
+p,li{
+font-size:1rem;
+color:var(--text-soft);
+line-height:1.8;
+}
+
+/* ======================
+   NAVBAR
+====================== */
+#navbar{
+position:fixed;
+top:0;
+width:100%;
+z-index:1000;
+backdrop-filter:blur(14px);
+background:rgba(5,4,10,0.92);
+border-bottom:1px solid var(--border-subtle);
+}
+
+.nav-container{
+max-width:1200px;
+margin:0 auto;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:1.2rem 2rem;
+}
+
+.nav-logo{
+color:var(--text);
+text-decoration:none;
+font-size:0.85rem;
+letter-spacing:0.22em;
+text-transform:uppercase;
+}
+
+.nav-links{
+display:flex;
+gap:2rem;
+list-style:none;
+}
+
+.nav-links a{
+color:var(--muted);
+text-decoration:none;
+font-size:0.8rem;
+letter-spacing:0.18em;
+text-transform:uppercase;
+position:relative;
+}
+
+.nav-links a::after{
+content:"";
+position:absolute;
+left:0;
+bottom:-6px;
+width:0;
+height:2px;
+background:linear-gradient(90deg,var(--accent),var(--accent-strong));
+transition:width .25s ease;
+}
+
+.nav-links a:hover::after{
+width:100%;
+}
+
+/* ======================
+   HERO
+====================== */
+.hero{
+margin-top:110px;
+min-height:70vh;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+background:
+radial-gradient(circle at 20% 0%,rgba(168,85,247,0.35),transparent 55%),
+radial-gradient(circle at 80% 100%,rgba(56,189,248,0.25),transparent 55%);
+}
+
+.hero-content{
+max-width:900px;
+}
+
+.hero h1{
+font-size:clamp(3rem,6vw,4.8rem);
+margin-bottom:1.2rem;
+}
+
+.hero p{
+max-width:720px;
+margin:0 auto;
+font-size:1.05rem;
+}
+
+.project-meta{
+display:flex;
+justify-content:center;
+gap:2.5rem;
+margin-top:2.4rem;
+flex-wrap:wrap;
+}
+
+.meta-item{
+background:var(--surface);
+padding:1rem 1.4rem;
+border-radius:var(--radius-md);
+border:1px solid var(--border-subtle);
+}
+
+.meta-label{
+font-size:0.7rem;
+letter-spacing:0.2em;
+color:var(--muted);
+text-transform:uppercase;
+}
+
+.meta-value{
+font-size:0.9rem;
+margin-top:0.3rem;
+}
+
+/* ======================
+   LAYOUT BLOCKS
+====================== */
+.intro-grid,
+.feature-grid,
+.process-grid,
+.stats-grid{
+display:grid;
+gap:2rem;
+}
+
+.intro-grid{grid-template-columns:2fr 1fr;}
+.feature-grid,.process-grid{grid-template-columns:repeat(2,1fr);}
+.stats-grid{grid-template-columns:repeat(4,1fr);}
+
+.intro-highlights,
+.feature-card,
+.stat-card,
+.process-card,
+.code-container{
+background:var(--surface);
+border-radius:var(--radius-lg);
+border:1px solid var(--border-subtle);
+padding:2rem;
+box-shadow:var(--shadow-soft);
+}
+
+/* ======================
+   PROBLEM BOX
+====================== */
+.problem-box{
+background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+padding:2.4rem;
+border-radius:var(--radius-lg);
+color:#fff;
+font-style:italic;
+}
+
+/* ======================
+   CODE BLOCK
+====================== */
+.code-header{
+background:var(--accent);
+padding:1rem 1.4rem;
+border-radius:14px 14px 0 0;
+font-weight:600;
+color:#fff;
+}
+
+.code-block{
+background:#020617;
+padding:2rem;
+font-family:monospace;
+font-size:0.9rem;
+overflow-x:auto;
+border-radius:0 0 14px 14px;
+}
+
+/* ======================
+   LISTS
+====================== */
+ul{list-style:none;margin-top:1rem;}
+li{padding-left:1.6rem;position:relative;}
+li::before{
+content:"→";
+position:absolute;
+left:0;
+color:var(--accent-strong);
+}
+
+/* ======================
+   ANIMATION
+====================== */
+.fade-in{
+opacity:0;
+transform:translateY(30px);
+transition:all .6s ease;
+}
+
+.fade-in.visible{
+opacity:1;
+transform:translateY(0);
+}
+
+/* ======================
+   RESPONSIVE
+====================== */
+@media(max-width:900px){
+.intro-grid,
+.feature-grid,
+.process-grid,
+.stats-grid{
+grid-template-columns:1fr;
+}
+}
+</style>
+</head>
+
+<body>
+
+<nav id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">← Back</a>
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#data">Data</a></li>
+      <li><a href="#methodology">Methodology</a></li>
+      <li><a href="#implementation">Implementation</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="hero fade-in">
+  <div class="hero-content">
+    <h1>Blinkit Order Prediction</h1>
+    <p>A machine learning project that analyzes personal ordering patterns to predict future purchases using Python and scikit-learn.</p>
+    <div class="project-meta">
+      <div class="meta-item"><div class="meta-label">Technology</div><div class="meta-value">Python, ML</div></div>
+      <div class="meta-item"><div class="meta-label">Libraries</div><div class="meta-value">Scikit-learn, Pandas</div></div>
+      <div class="meta-item"><div class="meta-label">Split Ratio</div><div class="meta-value">80–20 Train-Test</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="overview" class="fade-in">
+<h2>Project Overview</h2>
+<div class="intro-grid">
+<div>
+<p>This machine learning project was born out of curiosity about my own shopping patterns on Blinkit...</p>
+<p>The project demonstrates practical application of supervised learning techniques...</p>
+<p>Using Python’s data ecosystem, I trained a model that learns from my ordering habits...</p>
+</div>
+<div class="intro-highlights">
+<div><strong>Objective</strong><br>Predict next order</div><br>
+<div><strong>Approach</strong><br>Supervised ML</div><br>
+<div><strong>Dataset</strong><br>Personal Blinkit data</div>
+</div>
+</div>
+
+<h3>Problem Statement</h3>
+<div class="problem-box">
+<p>“Can machine learning accurately predict my next Blinkit order based on behavioural patterns?”</p>
+</div>
+</section>
+
+<section id="data" class="fade-in">
+<h2>Data Collection</h2>
+<div class="feature-grid">
+<div class="feature-card"><h4>Order Amount</h4><p>Captures spending patterns.</p></div>
+<div class="feature-card"><h4>Day of Week</h4><p>Temporal behaviour.</p></div>
+<div class="feature-card"><h4>Product Category</h4><p>Preference modelling.</p></div>
+<div class="feature-card"><h4>Time of Day</h4><p>Daily rhythm.</p></div>
+</div>
+</section>
+
+<section id="methodology" class="fade-in">
+<h2>Methodology</h2>
+<div class="stats-grid">
+<div class="stat-card"><h3>80%</h3><p>Training</p></div>
+<div class="stat-card"><h3>20%</h3><p>Testing</p></div>
+<div class="stat-card"><h3>4</h3><p>Features</p></div>
+<div class="stat-card"><h3>ML</h3><p>Model</p></div>
+</div>
+</section>
+
+<section id="implementation" class="fade-in">
+<h2>Python Implementation</h2>
+<div class="code-container">
+<div class="code-header">blinkit_prediction.py</div>
+<div class="code-block">
+from sklearn.model_selection import train_test_split  
+from sklearn.ensemble import RandomForestClassifier  
+import pandas as pd
+</div>
+</div>
+</section>
+
+<script>
+const els=document.querySelectorAll('.fade-in');
+const io=new IntersectionObserver(e=>{
+e.forEach(x=>x.isIntersecting&&x.target.classList.add('visible'))
+},{threshold:.2});
+els.forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
