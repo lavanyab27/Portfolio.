@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+<title>Reading Salt – TouchDesigner | Lavanya Bhatia</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Yeseva+One&family=Playfair+Display:wght@600;700;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* --- BASE PALETTE & VARIABLES (MATCHING INDEX.HTML) --- */
+:root {
+  --butter: #FFEDCA;
+  --ganache: #3D1D1C;
+  --powder: #9DB4C4;
+  --berry: #7F2834;
+
+  --bg: #FFEDCA;
+  --fg: #3D1D1C;
+  --card-bg: #3D1D1C;
+  --card-fg: #FFEDCA;
+  --muted: rgba(61, 29, 28, 0.78);
+  --border-subtle: rgba(61, 29, 28, 0.18);
+  --accent-blue: #9DB4C4;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { min-height: 100%; overflow-x: clip; width: 100%; }
+
+body {
+  margin: 0;
+  font-family: Poppins, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* --- CUSTOM CURSOR ORB --- */
+#cursor-orb {
+  position: fixed;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(157, 180, 196, 0.85) 0%, rgba(157, 180, 196, 0.15) 70%);
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease;
+  will-change: left, top;
+  display: none;
+}
+#cursor-orb.hovering {
+  width: 48px;
+  height: 48px;
+}
+@media (pointer: fine) {
+  #cursor-orb { display: block; }
+}
+
+/* --- CENTERED CURVED FLOATING NAVIGATION BAR --- */
+header.topbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  padding: 0.7rem 1.55rem;
+  background: rgba(255, 237, 202, 0.94);
+  color: var(--ganache);
+  border: 1.5px solid rgba(61, 29, 28, 0.18);
+  border-radius: 999px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(25, 10, 10, 0.16);
+  transition: all 0.35s ease;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--ganache);
+  white-space: nowrap;
+  transition: transform 0.25s ease;
+}
+.back-link:hover {
+  transform: translateX(-3px);
+}
+
+nav.topnav {
+  display: flex;
+  align-items: center;
+  gap: 1.35rem;
+}
+
+nav.topnav a {
+  font-size: 0.88rem;
+  font-weight: 500;
+  opacity: 0.85;
+  position: relative;
+  transition: opacity 0.25s ease;
+  white-space: nowrap;
+}
+
+nav.topnav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--powder);
+  transition: width 0.25s ease;
+}
+
+nav.topnav a:hover { opacity: 1; }
+nav.topnav a:hover::after { width: 100%; }
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  z-index: 1200;
+  color: var(--ganache);
+}
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2.5px;
+  margin: 4px 0;
+  background: currentColor;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.hamburger.active span:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.active span:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+/* --- SCROLL PROGRESS --- */
+#scroll-progress {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: column;
+}
+#scroll-progress .percent {
+  background: var(--ganache);
+  color: var(--butter);
+  padding: 5px 6px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border: 1px solid rgba(255, 237, 202, 0.25);
+  width: 42px;
+  text-align: center;
+}
+#scroll-progress .track {
+  width: 8px;
+  height: 180px;
+  background: rgba(61, 29, 28, 0.16);
+  border-radius: 999px;
+  padding: 2px;
+}
+#scroll-progress .fill {
+  width: 100%;
+  height: 0%;
+  background: var(--powder);
+  border-radius: 999px;
+  transition: height 140ms ease;
+}
+
+/* --- HERO SECTION: COMING SOON BANNER ON LEFT + INTRO ON RIGHT --- */
+.hero-split-section {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 8.4rem 3rem 3.8rem;
+  display: grid;
+  grid-template-columns: 1.04fr 0.96fr;
+  gap: 3.2rem;
+  align-items: center;
+}
+
+/* Left Column: Coming Soon Banner */
+.hero-banner-col {
+  width: 100%;
+}
+
+.coming-soon-banner {
+  background: var(--ganache);
+  color: var(--butter);
+  border: 2.5px solid var(--ganache);
+  border-radius: 26px;
+  box-shadow: 10px 10px 0 var(--powder), 12px 12px 0 var(--ganache);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 410px;
+  position: relative;
+}
+
+.banner-ribbon-top {
+  background: var(--powder);
+  color: var(--ganache);
+  padding: 0.65rem 1.35rem;
+  border-bottom: 2px solid var(--ganache);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.banner-status-pill {
+  background: var(--ganache);
+  color: var(--butter);
+  padding: 0.22rem 0.68rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+}
+
+.banner-center-body {
+  padding: 2.6rem 2.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
+  background-image:
+    radial-gradient(rgba(157, 180, 196, 0.14) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.banner-stamp {
+  display: inline-block;
+  background: var(--berry);
+  color: var(--butter);
+  border: 1.5px solid var(--butter);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  padding: 0.36rem 0.95rem;
+  border-radius: 999px;
+  transform: rotate(-2deg);
+  margin-bottom: 1.15rem;
+}
+
+.coming-soon-heading {
+  font-family: 'Syne', 'Yeseva One', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.5rem, 4.4vw, 3.85rem);
+  line-height: 0.98;
+  letter-spacing: -1.2px;
+  text-transform: uppercase;
+  color: var(--butter);
+  margin: 0 0 0.85rem 0;
+  text-shadow: 4px 4px 0 rgba(157, 180, 196, 0.28);
+}
+
+.coming-soon-sub {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--powder);
+  margin: 0 0 0.65rem 0;
+}
+
+.coming-soon-note {
+  font-size: 0.85rem;
+  line-height: 1.58;
+  color: rgba(255, 237, 202, 0.8);
+  max-width: 38ch;
+  margin: 0;
+}
+
+.banner-ribbon-bottom {
+  background: rgba(255, 237, 202, 0.08);
+  border-top: 1.5px dashed rgba(255, 237, 202, 0.25);
+  padding: 0.72rem 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--powder);
+}
+
+/* Right Column: Intro Content */
+.hero-intro-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.ticket-badge {
+  display: inline-block;
+  position: relative;
+  background: var(--powder);
+  color: var(--ganache);
+  font-family: Poppins, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  padding: 0.44rem 1.2rem;
+  border-radius: 4px;
+  transform: rotate(-2.5deg);
+  margin-bottom: 1.1rem;
+  box-shadow: 0 6px 16px rgba(61, 29, 28, 0.14);
+  -webkit-mask-image:
+    radial-gradient(circle at 0 50%, transparent 5px, black 5.5px),
+    radial-gradient(circle at 100% 50%, transparent 5px, black 5.5px);
+  -webkit-mask-composite: destination-in;
+  mask-image:
+    radial-gradient(circle at 0 50%, transparent 5px, black 5.5px),
+    radial-gradient(circle at 100% 50%, transparent 5px, black 5.5px);
+  mask-composite: intersect;
+}
+
+.page-title {
+  font-family: 'Syne', 'Yeseva One', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 4.5vw, 3.9rem);
+  line-height: 1.0;
+  letter-spacing: -1.4px;
+  text-transform: uppercase;
+  color: var(--ganache);
+  margin: 0 0 0.65rem 0;
+}
+
+.page-kicker-subtitle {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+  color: var(--berry);
+  line-height: 1.25;
+  margin: 0 0 1.1rem 0;
+}
+
+.intro-copy {
+  font-size: 0.96rem;
+  line-height: 1.68;
+  color: var(--muted);
+  margin: 0 0 1.5rem 0;
+}
+
+.intro-meta-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 18px;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 6px 6px 0 var(--ganache);
+  margin-bottom: 1.35rem;
+}
+
+.meta-cell-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+  opacity: 0.72;
+  margin-bottom: 0.2rem;
+}
+
+.meta-cell-val {
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.32;
+}
+
+.skill-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.skill-tag {
+  padding: 0.36rem 0.88rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1.5px solid var(--ganache);
+  background: transparent;
+  color: var(--ganache);
+}
+.skill-tag.pop-blue {
+  background: var(--powder);
+}
+
+/* --- SHARED SECTION LAYOUT --- */
+.content-section {
+  max-width: 1260px;
+  margin: 0 auto 4.8rem;
+  padding: 0 3rem;
+}
+
+.section-header-wrap {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.section-eyebrow {
+  display: inline-block;
+  background: var(--ganache);
+  color: var(--butter);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  margin-bottom: 0.65rem;
+}
+
+.section-heading {
+  font-family: 'Syne', 'Yeseva One', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.75rem, 3.2vw, 2.55rem);
+  letter-spacing: -0.6px;
+  text-transform: uppercase;
+  color: var(--ganache);
+  margin: 0;
+}
+
+.section-sub {
+  color: var(--muted);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  margin: 0.55rem auto 0;
+  max-width: 60ch;
+}
+
+/* --- FIELDWORK METRICS & 8 SAMPLES --- */
+.metrics-trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6rem;
+  margin-bottom: 2.2rem;
+}
+
+.metric-card {
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 22px;
+  padding: 1.75rem 1.8rem;
+  box-shadow: 7px 7px 0 var(--ganache);
+}
+
+.metric-big {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  line-height: 1;
+  color: var(--ganache);
+  margin-bottom: 0.45rem;
+}
+
+.metric-label {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.18rem;
+  margin-bottom: 0.45rem;
+}
+
+.metric-desc {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Fieldwork Samples Card */
+.dataset-panel {
+  background: #FFF9EE;
+  border: 2.5px solid var(--ganache);
+  border-radius: 24px;
+  padding: 2rem 2.2rem;
+  box-shadow: 9px 9px 0 var(--powder), 11px 11px 0 var(--ganache);
+}
+
+.dataset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+}
+
+.dataset-header h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.dataset-header p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.samples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.72rem;
+}
+
+.sample-row {
+  display: grid;
+  grid-template-columns: 210px 1fr 120px 125px;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(255, 237, 202, 0.55);
+  border: 1px solid rgba(61, 29, 28, 0.14);
+}
+
+.sample-row.well-highlight {
+  background: rgba(157, 180, 196, 0.28);
+  border-color: rgba(61, 29, 28, 0.28);
+}
+
+.sample-name {
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+.sample-tag-sub {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.sample-bar-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(61, 29, 28, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.sample-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ganache);
+}
+.sample-row.well-highlight .sample-bar-fill {
+  background: var(--berry);
+}
+
+.sample-ec-val {
+  font-weight: 800;
+  font-size: 0.84rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sample-tds-val {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: right;
+  opacity: 0.8;
+}
+
+.disclaimer-banner {
+  margin-top: 1.35rem;
+  padding: 0.95rem 1.2rem;
+  border-radius: 14px;
+  background: var(--ganache);
+  color: var(--butter);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+.disclaimer-banner strong {
+  color: var(--powder);
+}
+
+/* --- TOUCHDESIGNER PIPELINE & 6 OPERATOR ZONES --- */
+.pipeline-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.2rem;
+}
+
+.pipeline-step {
+  background: var(--ganache);
+  color: var(--butter);
+  border-radius: 18px;
+  padding: 1.35rem 1.2rem;
+  border: 2px solid var(--ganache);
+  box-shadow: 5px 5px 0 var(--powder);
+}
+
+.pipeline-num {
+  display: inline-block;
+  background: var(--powder);
+  color: var(--ganache);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  margin-bottom: 0.55rem;
+}
+
+.pipeline-step h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  margin: 0 0 0.35rem 0;
+}
+
+.pipeline-step p {
+  font-size: 0.8rem;
+  line-height: 1.48;
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* Principle Callout */
+.principle-box {
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 20px;
+  padding: 1.55rem 1.9rem;
+  box-shadow: 7px 7px 0 var(--ganache);
+  margin-bottom: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.principle-box h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.38rem;
+  margin: 0 0 0.35rem 0;
+}
+
+.principle-box p {
+  font-size: 0.9rem;
+  line-height: 1.58;
+  margin: 0;
+}
+
+.op-legend {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.op-pill {
+  padding: 0.32rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border: 1.5px solid var(--ganache);
+  background: var(--butter);
+  color: var(--ganache);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.op-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+/* 6 TouchDesigner Zones Grid */
+.zones-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+}
+
+.zone-card {
+  background: #FFF9EE;
+  border: 2px solid var(--ganache);
+  border-radius: 20px;
+  padding: 1.55rem 1.6rem;
+  box-shadow: 6px 6px 0 var(--ganache);
+}
+
+.zone-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.zone-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: var(--ganache);
+  color: var(--butter);
+  padding: 0.24rem 0.65rem;
+  border-radius: 8px;
+}
+
+.zone-op-type {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--ganache);
+}
+.op-dat { background: #F5D0FE; }
+.op-chop { background: #BBF7D0; }
+.op-sop { background: #BAE6FD; }
+.op-top { background: #DDD6FE; }
+
+.zone-card h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.28rem;
+  margin: 0 0 0.45rem 0;
+}
+
+.zone-card p {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+.zone-card code {
+  background: rgba(61, 29, 28, 0.08);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* --- MAPPING PROBLEM & VISUAL ITERATIONS --- */
+.mapping-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 2rem;
+  margin-bottom: 2.2rem;
+}
+
+.mapping-card {
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 22px;
+  padding: 1.9rem 2rem;
+  box-shadow: 8px 8px 0 var(--ganache);
+}
+
+.mapping-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  margin: 0 0 0.65rem 0;
+}
+
+.mapping-card p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0 0 1.2rem 0;
+}
+
+.scale-compare-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scale-compare-item {
+  background: var(--butter);
+  border: 1.5px solid var(--ganache);
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+}
+
+.scale-item-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+}
+
+.dual-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.mini-bar-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 42px;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.mini-track {
+  height: 8px;
+  background: rgba(61, 29, 28, 0.14);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mini-fill-linear {
+  height: 100%;
+  background: rgba(61, 29, 28, 0.38);
+  border-radius: 999px;
+}
+
+.mini-fill-log {
+  height: 100%;
+  background: var(--berry);
+  border-radius: 999px;
+}
+
+/* Visual Language Tiers */
+.visual-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.tier-box {
+  background: var(--ganache);
+  color: var(--butter);
+  border-radius: 16px;
+  padding: 1.15rem 1.3rem;
+  border: 1.5px solid var(--ganache);
+}
+
+.tier-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+  color: var(--powder);
+  margin-bottom: 0.25rem;
+}
+
+.tier-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.tier-desc {
+  font-size: 0.82rem;
+  opacity: 0.86;
+  margin: 0;
+  line-height: 1.48;
+}
+
+/* 4 TouchDesigner Iterations */
+.iterations-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.iter-card {
+  background: #FFF9EE;
+  border: 2px solid var(--ganache);
+  border-radius: 18px;
+  padding: 1.4rem 1.35rem;
+  box-shadow: 5px 5px 0 var(--powder);
+}
+
+.iter-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--berry);
+  margin-bottom: 0.35rem;
+}
+
+.iter-card h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.16rem;
+  margin: 0 0 0.45rem 0;
+}
+
+.iter-card p {
+  font-size: 0.84rem;
+  line-height: 1.52;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* --- DARK-ROOM INSTALLATION WALKTHROUGH --- */
+.installation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+}
+
+.install-step-card {
+  background: var(--ganache);
+  color: var(--butter);
+  border: 2px solid var(--ganache);
+  border-radius: 20px;
+  padding: 1.65rem 1.6rem;
+  box-shadow: 7px 7px 0 var(--powder);
+}
+
+.install-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+.install-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.82rem;
+  background: var(--powder);
+  color: var(--ganache);
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+}
+
+.install-verb {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.install-step-card p {
+  font-size: 0.86rem;
+  line-height: 1.56;
+  opacity: 0.88;
+  margin: 0;
+}
+
+/* --- REFLECTION & NEXT STEPS --- */
+.reflection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.8rem;
+}
+
+.reflection-card {
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 22px;
+  padding: 1.9rem 2rem;
+  box-shadow: 8px 8px 0 var(--ganache);
+}
+
+.reflection-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+}
+
+.reflection-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* --- NEXT PROJECT NAVIGATION --- */
+.next-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.6rem;
+}
+
+.next-card {
+  background: var(--ganache);
+  color: var(--butter);
+  border: 2px solid var(--ganache);
+  border-radius: 22px;
+  padding: 2rem 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 7px 7px 0 var(--powder);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.next-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 10px 10px 0 var(--powder);
+}
+
+.next-kicker {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  color: var(--powder);
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.next-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.65rem;
+  margin: 0 0 0.3rem 0;
+}
+
+.next-desc {
+  font-size: 0.88rem;
+  opacity: 0.82;
+  margin: 0;
+}
+
+.next-arrow-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--butter);
+  color: var(--ganache);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  transition: background 0.25s ease;
+}
+.next-card:hover .next-arrow-circle {
+  background: var(--powder);
+}
+
+footer {
+  padding: 1.8rem;
+  text-align: center;
+  font-size: 0.88rem;
+  background: var(--ganache);
+  color: rgba(255, 237, 202, 0.72);
+}
+
+/* ==========================================================================
+   TABLET & MOBILE RESPONSIVE STYLES
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .hero-split-section {
+    grid-template-columns: 1fr;
+    gap: 2.2rem;
+  }
+  .coming-soon-banner {
+    min-height: 320px;
+  }
+  .metrics-trio,
+  .zones-grid,
+  .installation-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pipeline-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mapping-grid,
+  .reflection-grid {
+    grid-template-columns: 1fr;
+  }
+  .iterations-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  header.topbar {
+    top: 14px;
+    width: calc(100vw - 24px);
+    justify-content: space-between;
+    padding: 0.6rem 1.15rem;
+  }
+  .back-link {
+    font-size: 0.84rem;
+  }
+  .hamburger { display: block; }
+
+  nav.topnav {
+    position: fixed;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: var(--ganache);
+    color: var(--butter);
+    border-radius: 22px;
+    border: 1.5px solid rgba(255, 237, 202, 0.25);
+    padding: 1.35rem 1.5rem;
+    flex-direction: column;
+    gap: 1.05rem;
+    display: none;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  }
+  nav.topnav.open { display: flex; }
+
+  .hero-split-section {
+    padding: 5.8rem 1.25rem 2.6rem;
+    gap: 1.8rem;
+  }
+  .coming-soon-banner {
+    width: calc(100% - 8px);
+    min-height: 270px;
+    box-shadow: 6px 6px 0 var(--powder), 8px 8px 0 var(--ganache);
+    border-radius: 18px;
+  }
+  .banner-ribbon-top,
+  .banner-ribbon-bottom {
+    padding: 0.55rem 0.95rem;
+    font-size: 0.64rem;
+  }
+  .banner-center-body {
+    padding: 2rem 1.25rem;
+  }
+  .coming-soon-heading {
+    font-size: clamp(2.1rem, 9.5vw, 3rem);
+  }
+  .coming-soon-sub {
+    font-size: 1rem;
+  }
+  .page-title {
+    font-size: clamp(2rem, 8.5vw, 2.75rem);
+    letter-spacing: -0.7px;
+  }
+  .page-kicker-subtitle {
+    font-size: 1.05rem;
+  }
+  .intro-copy {
+    font-size: 0.9rem;
+  }
+  .intro-meta-grid {
+    padding: 1rem;
+    width: calc(100% - 5px);
+    box-shadow: 5px 5px 0 var(--ganache);
+  }
+
+  .content-section {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    margin-bottom: 3.5rem;
+  }
+  .section-heading {
+    font-size: clamp(1.4rem, 6vw, 1.9rem);
+  }
+  .section-sub {
+    font-size: 0.88rem;
+  }
+
+  .metrics-trio,
+  .pipeline-strip,
+  .zones-grid,
+  .iterations-grid,
+  .installation-grid,
+  .next-grid {
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+  }
+
+  .metric-card,
+  .principle-box,
+  .mapping-card,
+  .reflection-card {
+    padding: 1.35rem 1.25rem;
+    width: calc(100% - 5px);
+    box-shadow: 5px 5px 0 var(--ganache);
+    border-radius: 18px;
+  }
+
+  .dataset-panel {
+    padding: 1.3rem 1.15rem;
+    width: calc(100% - 8px);
+    box-shadow: 6px 6px 0 var(--powder), 8px 8px 0 var(--ganache);
+    border-radius: 18px;
+  }
+
+  .sample-row {
+    grid-template-columns: 1fr auto;
+    gap: 0.45rem 0.75rem;
+  }
+  .sample-bar-track {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+  .sample-tds-val {
+    display: none;
+  }
+
+  .principle-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .next-card {
+    padding: 1.35rem 1.25rem;
+    width: calc(100% - 5px);
+    box-shadow: 5px 5px 0 var(--powder);
+  }
+  .next-title {
+    font-size: 1.32rem;
+  }
+
+  footer {
+    padding: 1.4rem 1rem;
+    font-size: 0.78rem;
+  }
+
+  #scroll-progress { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor-orb"></div>
+
+<div id="scroll-progress" aria-hidden="true">
+  <div class="percent">0%</div>
+  <div class="track">
+    <div class="fill" style="height:0%"></div>
+  </div>
+</div>
+
+<!-- CENTERED CURVED PILL NAVIGATION BAR -->
+<header class="topbar" role="banner">
+  <a href="index.html#projects" class="back-link">← Back to Portfolio</a>
+
+  <nav class="topnav" role="navigation" aria-label="Project sections">
+    <a href="#fieldwork">Fieldwork</a>
+    <a href="#network">TD Network</a>
+    <a href="#mapping">Log Mapping</a>
+    <a href="#installation">Installation</a>
+  </nav>
+
+  <button class="hamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<!-- HERO SPLIT: COMING SOON BANNER ON LEFT + INTRO ON RIGHT -->
+<section class="hero-split-section" id="overview">
+  <!-- LEFT: COMING SOON BANNER -->
+  <div class="hero-banner-col">
+    <div class="coming-soon-banner" role="region" aria-label="TouchDesigner Video Showcase Coming Soon">
+      <div class="banner-ribbon-top">
+        <span>TOUCHDESIGNER • PROJECTION REEL</span>
+        <span class="banner-status-pill">IN EDITING</span>
+      </div>
+
+      <div class="banner-center-body">
+        <span class="banner-stamp">LIVE SYSTEM WALKTHROUGH</span>
+        <h2 class="coming-soon-heading">Coming Soon</h2>
+        <p class="coming-soon-sub">Dark-Room Particle Visualisation Capture</p>
+        <p class="coming-soon-note">Screen recording of the live EC probe to TouchDesigner POP particle response across Kundapura water samples is currently being compiled.</p>
+      </div>
+
+      <div class="banner-ribbon-bottom">
+        <span>LOG SCALE: 500–45,000 µS/CM</span>
+        <span>KUNDAPURA • 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PROJECT INTRO -->
+  <div class="hero-intro-col">
+    <div class="ticket-badge">TOUCHDESIGNER &amp; COMPUTATIONAL SENSING • 2026</div>
+    <h1 class="page-title">Reading Salt</h1>
+    <div class="page-kicker-subtitle">Making Invisible Coastal Salinity Legible in Kundapura</div>
+    <p class="intro-copy">Water from a household well, an estuary, and the Arabian Sea can look identical in a glass—yet differ by more than <strong>52×</strong> in electrical conductivity. Built under the studio <em>Life Imitating Code: Algorithms for Kundapur</em>, this project pairs field conductivity sensing with a real-time TouchDesigner particle network to translate unseen dissolved salt into a responsive field of light.</p>
+
+    <div class="intro-meta-grid">
+      <div>
+        <div class="meta-cell-label">Role &amp; Program</div>
+        <div class="meta-cell-val">B.Des Creative &amp; Applied Computation</div>
+      </div>
+      <div>
+        <div class="meta-cell-label">Institution &amp; Guide</div>
+        <div class="meta-cell-val">Srishti Manipal • Dr. Venkata Chilukuri</div>
+      </div>
+      <div>
+        <div class="meta-cell-label">System Stack</div>
+        <div class="meta-cell-val">EC/TDS Probe + TouchDesigner (POPs)</div>
+      </div>
+      <div>
+        <div class="meta-cell-label">Field Site</div>
+        <div class="meta-cell-val">Kundapura &amp; Gangolli Estuary, Udupi</div>
+      </div>
+    </div>
+
+    <div class="skill-tags">
+      <span class="skill-tag pop-blue">TouchDesigner</span>
+      <span class="skill-tag">Data Visualisation</span>
+      <span class="skill-tag">Field Sensing</span>
+      <span class="skill-tag">Logarithmic Mapping</span>
+    </div>
+  </div>
+</section>
+
+<!-- 01. FIELDWORK & CONTEXT -->
+<section class="content-section" id="fieldwork">
+  <div class="section-header-wrap">
+    <div class="section-eyebrow">01 • Fieldwork &amp; Context</div>
+    <h2 class="section-heading">Eight Samples, One Coastline</h2>
+    <p class="section-sub">In Kundapura, where the Panchagangavali river meets the sea around Gangolli, tides, summer water-table drops, and groundwater pumping push salt inland without changing how water looks.</p>
+  </div>
+
+  <div class="metrics-trio">
+    <div class="metric-card">
+      <div class="metric-big">52×</div>
+      <div class="metric-label">Conductivity Span</div>
+      <p class="metric-desc">Gap between Kodi Beach (<strong>39,800 µS/cm</strong>) and Groundwater 3 (<strong>760 µS/cm</strong>) across water samples that appear visually identical in jars.</p>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-big">2 of 3</div>
+      <div class="metric-label">Wells Above Freshwater Range</div>
+      <p class="metric-desc">Two sampled drinking-water wells read above the typical 100–800 µS/cm freshwater range, with Groundwater 2 reaching 2,460 µS/cm.</p>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-big">−40%</div>
+      <div class="metric-label">Tidal Salinity Shift</div>
+      <p class="metric-desc">Measured at the exact same estuary point: dropping from <strong>31,200 µS/cm</strong> at high tide to <strong>18,600 µS/cm</strong> at low tide.</p>
+    </div>
+  </div>
+
+  <div class="dataset-panel">
+    <div class="dataset-header">
+      <div>
+        <h3>Kundapura Field Dataset (5 Water Types)</h3>
+        <p>Collected using a standardized 5-step protocol: Collect → Label → Measure at fixed depth → Record → Rinse probe.</p>
+      </div>
+      <span class="skill-tag pop-blue">BIS Acceptable TDS: 500 mg/L</span>
+    </div>
+
+    <div class="samples-list">
+      <div class="sample-row">
+        <div class="sample-name">08 • Kodi Beach <span class="sample-tag-sub">Arabian Sea • High Tide</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:100%"></div></div>
+        <div class="sample-ec-val">39,800 µS/cm</div>
+        <div class="sample-tds-val">28,000 mg/L TDS</div>
+      </div>
+
+      <div class="sample-row">
+        <div class="sample-name">01 • Estuary (High) <span class="sample-tag-sub">Gangolli Confluence • High Tide</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:78.4%"></div></div>
+        <div class="sample-ec-val">31,200 µS/cm</div>
+        <div class="sample-tds-val">21,800 mg/L TDS</div>
+      </div>
+
+      <div class="sample-row">
+        <div class="sample-name">03 • Gangolli Port <span class="sample-tag-sub">Coastal Harbour • Low Tide</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:68.8%"></div></div>
+        <div class="sample-ec-val">27,400 µS/cm</div>
+        <div class="sample-tds-val">19,200 mg/L TDS</div>
+      </div>
+
+      <div class="sample-row">
+        <div class="sample-name">02 • Estuary (Low) <span class="sample-tag-sub">Gangolli Confluence • Low Tide</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:46.7%"></div></div>
+        <div class="sample-ec-val">18,600 µS/cm</div>
+        <div class="sample-tds-val">13,000 mg/L TDS</div>
+      </div>
+
+      <div class="sample-row">
+        <div class="sample-name">04 • River Basin <span class="sample-tag-sub">Panchagangavali • High Tide</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:14%"></div></div>
+        <div class="sample-ec-val">3,250 µS/cm</div>
+        <div class="sample-tds-val">2,100 mg/L TDS</div>
+      </div>
+
+      <div class="sample-row well-highlight">
+        <div class="sample-name">06 • Groundwater 2 <span class="sample-tag-sub">Household Well • 3× BIS Limit</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:10.5%"></div></div>
+        <div class="sample-ec-val">2,460 µS/cm</div>
+        <div class="sample-tds-val">1,550 mg/L TDS</div>
+      </div>
+
+      <div class="sample-row well-highlight">
+        <div class="sample-name">05 • Groundwater 1 <span class="sample-tag-sub">Household Well • Permissible Band</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:6%"></div></div>
+        <div class="sample-ec-val">1,180 µS/cm</div>
+        <div class="sample-tds-val">720 mg/L TDS</div>
+      </div>
+
+      <div class="sample-row well-highlight">
+        <div class="sample-name">07 • Groundwater 3 <span class="sample-tag-sub">Household Well • Within Acceptable</span></div>
+        <div class="sample-bar-track"><div class="sample-bar-fill" style="width:4%"></div></div>
+        <div class="sample-ec-val">760 µS/cm</div>
+        <div class="sample-tds-val">470 mg/L TDS</div>
+      </div>
+    </div>
+
+    <div class="disclaimer-banner">
+      <strong>Honest Measurement Principle:</strong> Electrical conductivity counts all dissolved ions together—it cannot separate sodium from beneficial calcium or magnesium, nor detect microbes or nitrates. Every reading on screen is presented as an <strong>indicator of salinity</strong>, never a medical or lab safety verdict.
+    </div>
+  </div>
+</section>
+
+<!-- 02. TOUCHDESIGNER PIPELINE & ARCHITECTURE -->
+<section class="content-section" id="network">
+  <div class="section-header-wrap">
+    <div class="section-eyebrow">02 • Digital Architecture</div>
+    <h2 class="section-heading">From Sample to Projection</h2>
+    <p class="section-sub">All logic lives inside a single TouchDesigner network that parses incoming conductivity readings, smooths sensor noise, and drives a real-time POP particle field.</p>
+  </div>
+
+  <!-- 5-Stage Pipeline -->
+  <div class="pipeline-strip">
+    <div class="pipeline-step">
+      <span class="pipeline-num">01 SENSE</span>
+      <h3>Probe Reading</h3>
+      <p>EC probe captures sample conductivity (µS/cm) alongside temperature.</p>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-num">02 INPUT</span>
+      <h3>Live Data In</h3>
+      <p>Readings enter TouchDesigner as structured JSON / table data.</p>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-num">03 MAP</span>
+      <h3>Smooth &amp; Scale</h3>
+      <p>Moving average damps flicker; log curve normalises values to 0–1.</p>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-num">04 RESPOND</span>
+      <h3>Particle Field</h3>
+      <p>Particle density, drift velocity, and luminance shift in real time.</p>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-num">05 DISPLAY</span>
+      <h3>Evidence HUD</h3>
+      <p>Sample ID and stabilised µS/cm remain visible beside the particles.</p>
+    </div>
+  </div>
+
+  <!-- Design Principle Banner -->
+  <div class="principle-box">
+    <div>
+      <h3>“The Number Never Disappears”</h3>
+      <p>A glowing particle field with no reading beside it would be pure decoration. Only visual motion is smoothed with a short moving average—the displayed <strong>µS/cm</strong> value stays true to the stabilised sensor reading so the projection remains a translation, not an illustration.</p>
+    </div>
+    <div class="op-legend">
+      <span class="op-pill"><span class="op-dot" style="background:#D946EF"></span>DATs (Data)</span>
+      <span class="op-pill"><span class="op-dot" style="background:#22C55E"></span>CHOPs (Channels)</span>
+      <span class="op-pill"><span class="op-dot" style="background:#0EA5E9"></span>SOPs (Geometry)</span>
+      <span class="op-pill"><span class="op-dot" style="background:#8B5CF6"></span>TOPs (Render)</span>
+    </div>
+  </div>
+
+  <!-- 6 Operator Zones -->
+  <div class="zones-grid">
+    <div class="zone-card">
+      <div class="zone-top">
+        <span class="zone-num">ZONE 01</span>
+        <span class="zone-op-type op-dat">DATs</span>
+      </div>
+      <h4>Data &amp; JSON Input</h4>
+      <p><code>execute1</code>, <code>default_data</code>, and <code>in1</code> ingest live sample readings as JSON text, while <code>json1</code> and <code>json2</code> parse keys into structured tables.</p>
+    </div>
+
+    <div class="zone-card">
+      <div class="zone-top">
+        <span class="zone-num">ZONE 02</span>
+        <span class="zone-op-type op-chop">DAT → CHOP</span>
+      </div>
+      <h4>Channel Parsing &amp; Scaling</h4>
+      <p>Parsed tables convert into numeric channels (<code>DAT to CHOP</code>), renamed and rescaled through <code>Math</code> CHOPs for downstream parameter control.</p>
+    </div>
+
+    <div class="zone-card">
+      <div class="zone-top">
+        <span class="zone-num">ZONE 03</span>
+        <span class="zone-op-type op-chop">CHOPs</span>
+      </div>
+      <h4>Motion &amp; Smoothing</h4>
+      <p>Velocity and filter CHOPs compute rate-of-change and damp sensor jitter before merging channels into a clean <code>normalised_data</code> bus.</p>
+    </div>
+
+    <div class="zone-card">
+      <div class="zone-top">
+        <span class="zone-num">ZONE 04</span>
+        <span class="zone-op-type op-dat">DAT / CHOP</span>
+      </div>
+      <h4>State &amp; Pose Matching</h4>
+      <p>Incoming sample and interaction states are reordered and compared against reference thresholds to trigger visual transitions between water types.</p>
+    </div>
+
+    <div class="zone-card">
+      <div class="zone-top">
+        <span class="zone-num">ZONE 05</span>
+        <span class="zone-op-type op-sop">SOPs</span>
+      </div>
+      <h4>Point Geometry Rebuild</h4>
+      <p>Python callbacks rebuild point geometry in real time, attaching custom per-point attributes for spatial distribution, drift, and scale.</p>
+    </div>
+
+    <div class="zone-card">
+      <div class="zone-top">
+        <span class="zone-num">ZONE 06</span>
+        <span class="zone-op-type op-top">TOPs</span>
+      </div>
+      <h4>Instanced Particle Render</h4>
+      <p><code>instance_data</code> drives <code>point_render</code>, compositing the luminous particle field and live <code>µS/cm</code> readout out to <code>out1</code> and the projector.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 03. THE MAPPING PROBLEM & ITERATIONS -->
+<section class="content-section" id="mapping">
+  <div class="section-header-wrap">
+    <div class="section-eyebrow">03 • Visual Language &amp; Iteration</div>
+    <h2 class="section-heading">Solving the Logarithmic Mapping Problem</h2>
+    <p class="section-sub">Because field samples span 760 to 39,800 µS/cm, a linear scale erases the exact differences between household wells that matter most to people.</p>
+  </div>
+
+  <div class="mapping-grid">
+    <!-- Linear vs Log Comparison Card -->
+    <div class="mapping-card">
+      <h3>Linear vs. Logarithmic Scale (0–1)</h3>
+      <p>Mapped linearly, all three drinking-water wells collapse near zero—making the screen look equally empty. Switching to a <strong>logarithmic scale (500–45,000 µS/cm)</strong>—plus a zoomed <strong>Drinking-Water Mode (100–3,000 µS/cm)</strong>—gives every sample its own legible visual state.</p>
+
+      <div class="scale-compare-list">
+        <div class="scale-compare-item">
+          <div class="scale-item-head">
+            <span>Groundwater 3 (760 µS/cm)</span>
+            <span>Linear: 0.01 vs Log: 0.10</span>
+          </div>
+          <div class="dual-bars">
+            <div class="mini-bar-row"><span>Linear</span><div class="mini-track"><div class="mini-fill-linear" style="width:2%"></div></div><span>1%</span></div>
+            <div class="mini-bar-row"><span>Log</span><div class="mini-track"><div class="mini-fill-log" style="width:10%"></div></div><span>10%</span></div>
+          </div>
+        </div>
+
+        <div class="scale-compare-item">
+          <div class="scale-item-head">
+            <span>Groundwater 1 (1,180 µS/cm)</span>
+            <span>Linear: 0.02 vs Log: 0.19</span>
+          </div>
+          <div class="dual-bars">
+            <div class="mini-bar-row"><span>Linear</span><div class="mini-track"><div class="mini-fill-linear" style="width:3%"></div></div><span>2%</span></div>
+            <div class="mini-bar-row"><span>Log</span><div class="mini-track"><div class="mini-fill-log" style="width:19%"></div></div><span>19%</span></div>
+          </div>
+        </div>
+
+        <div class="scale-compare-item">
+          <div class="scale-item-head">
+            <span>Groundwater 2 (2,460 µS/cm)</span>
+            <span>Linear: 0.05 vs Log: 0.36</span>
+          </div>
+          <div class="dual-bars">
+            <div class="mini-bar-row"><span>Linear</span><div class="mini-track"><div class="mini-fill-linear" style="width:5%"></div></div><span>5%</span></div>
+            <div class="mini-bar-row"><span>Log</span><div class="mini-track"><div class="mini-fill-log" style="width:36%"></div></div><span>36%</span></div>
+          </div>
+        </div>
+
+        <div class="scale-compare-item">
+          <div class="scale-item-head">
+            <span>Kodi Beach (39,800 µS/cm)</span>
+            <span>Linear: 0.88 vs Log: 0.97</span>
+          </div>
+          <div class="dual-bars">
+            <div class="mini-bar-row"><span>Linear</span><div class="mini-track"><div class="mini-fill-linear" style="width:88%"></div></div><span>88%</span></div>
+            <div class="mini-bar-row"><span>Log</span><div class="mini-track"><div class="mini-fill-log" style="width:97%"></div></div><span>97%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visual Language Tiers -->
+    <div class="visual-tiers">
+      <div class="tier-box">
+        <div class="tier-tag">Lower Relative EC • ~760 µS/cm</div>
+        <h4 class="tier-title">Sparse &amp; Calm Particle Field</h4>
+        <p class="tier-desc">Open negative space, low particle count, and slow, unhurried drift communicate fresh groundwater conditions.</p>
+      </div>
+
+      <div class="tier-box">
+        <div class="tier-tag">Mid-Range EC • 1,180 – 3,250 µS/cm</div>
+        <h4 class="tier-title">Moderate Density &amp; Current</h4>
+        <p class="tier-desc">Visible clustering and steady lateral flow distinguish mildly saline wells and brackish river water at high tide.</p>
+      </div>
+
+      <div class="tier-box">
+        <div class="tier-tag">Higher Relative EC • 18,600 – 39,800 µS/cm</div>
+        <h4 class="tier-title">Dense Field &amp; High Luminance</h4>
+        <p class="tier-desc">Saturated particle count, heightened glow intensity, and rapid kinetic turbulence visualize estuary and sea salinity.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 TouchDesigner Iterations -->
+  <div class="iterations-grid">
+    <div class="iter-card">
+      <div class="iter-num">01</div>
+      <h4>Abstract Fluid</h4>
+      <p>Early fluid simulation looked expressive, but organic turbulence could not be read reliably against a single conductivity value.</p>
+    </div>
+
+    <div class="iter-card">
+      <div class="iter-num">02</div>
+      <h4>Particle POP</h4>
+      <p>Switched to countable POP particle fields—making spatial density immediately legible as a quantitative visual variable.</p>
+    </div>
+
+    <div class="iter-card">
+      <div class="iter-num">03</div>
+      <h4>Data Input Channel</h4>
+      <p>Built a dedicated parsing and moving-average pipeline so live probe values drive one clean, flicker-free control channel.</p>
+    </div>
+
+    <div class="iter-card">
+      <div class="iter-num">04</div>
+      <h4>Layered Behaviour</h4>
+      <p>Added drift speed and luminance glow strictly as secondary reinforcement—never overriding primary particle density.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 04. DARK-ROOM WATER-TESTING INSTALLATION -->
+<section class="content-section" id="installation">
+  <div class="section-header-wrap">
+    <div class="section-eyebrow">04 • Exhibition Outcome</div>
+    <h2 class="section-heading">Dark-Room Water-Testing Installation</h2>
+    <p class="section-sub">Visitors become active testers—dipping the probe into labelled Kundapura samples and watching water that looks identical in the hand transform across the projection wall.</p>
+  </div>
+
+  <div class="installation-grid">
+    <div class="install-step-card">
+      <div class="install-step-head">
+        <span class="install-num">01</span>
+        <span class="install-verb">Enter</span>
+      </div>
+      <p>Step into a darkened space dominated by a large projection wall, ambient idle particle motion, and a clear legend explaining EC and the logarithmic scale.</p>
+    </div>
+
+    <div class="install-step-card">
+      <div class="install-step-head">
+        <span class="install-num">02</span>
+        <span class="install-verb">Select</span>
+      </div>
+      <p>Choose from labelled sample stations representing Kundapura's coastal gradient: household wells, river basin, estuary, port, and sea.</p>
+    </div>
+
+    <div class="install-step-card">
+      <div class="install-step-head">
+        <span class="install-num">03</span>
+        <span class="install-verb">Measure</span>
+      </div>
+      <p>Immerse the EC probe into the sample jar to the marked depth and wait a few seconds for the reading to settle.</p>
+    </div>
+
+    <div class="install-step-card">
+      <div class="install-step-head">
+        <span class="install-num">04</span>
+        <span class="install-verb">Observe</span>
+      </div>
+      <p>Watch the live <strong>µS/cm</strong> reading update on screen as the TouchDesigner particle field expands or contracts in real time.</p>
+    </div>
+
+    <div class="install-step-card">
+      <div class="install-step-head">
+        <span class="install-num">05</span>
+        <span class="install-verb">Compare</span>
+      </div>
+      <p>Rinse the probe in clean water and test a second sample—contrasting two visually identical jars side by side through light and density.</p>
+    </div>
+
+    <div class="install-step-card">
+      <div class="install-step-head">
+        <span class="install-num">06</span>
+        <span class="install-verb">Reflect</span>
+      </div>
+      <p>Wall text grounds the experience: EC makes ionic difference perceptible, while full potability requires laboratory testing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05. REFLECTION & NEXT STEPS -->
+<section class="content-section" id="reflection">
+  <div class="section-header-wrap">
+    <div class="section-eyebrow">05 • Reflection</div>
+    <h2 class="section-heading">What Worked &amp; Thesis Next Steps</h2>
+  </div>
+
+  <div class="reflection-grid">
+    <div class="reflection-card">
+      <h3>Key Takeaways</h3>
+      <ul class="reflection-list">
+        <li><strong>Tying Art to Evidence:</strong> Keeping the live µS/cm reading on screen prevented the TouchDesigner visual from becoming mere aesthetic abstraction.</li>
+        <li><strong>Scale Honesty:</strong> Discovering that linear mapping hid well-water variation led directly to the disclosed logarithmic scale and dual exhibition modes.</li>
+        <li><strong>Grounded Fieldwork:</strong> Eight standardized samples across five coastal water bodies established a 52× empirical baseline for the digital system.</li>
+      </ul>
+    </div>
+
+    <div class="reflection-card">
+      <h3>Next Steps for Thesis</h3>
+      <ul class="reflection-list">
+        <li><strong>Seasonal Resampling:</strong> Re-measure the same Kundapura wells pre- and post-monsoon to capture seasonal saltwater intrusion shifts over time.</li>
+        <li><strong>Temperature Compensation:</strong> Integrate automated temperature calibration into the live sensor pipeline for multi-hour exhibition runs.</li>
+        <li><strong>Visitor Interaction Studies:</strong> Evaluate how first-time visitors interpret the Drinking-Water Mode vs. Coast Mode inside the dark room.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- MORE PROJECTS -->
+<section class="content-section">
+  <div class="section-header-wrap">
+    <h2 class="section-heading">Explore More Work</h2>
+  </div>
+
+  <div class="next-grid">
+    <a href="blender.html" class="next-card">
+      <div>
+        <div class="next-kicker">3D &amp; Creative Coding</div>
+        <h3 class="next-title">Blender 3D Environments</h3>
+        <p class="next-desc">400-frame chessboard animation, isometric kitchen, and stylized room studies.</p>
+      </div>
+      <div class="next-arrow-circle">→</div>
+    </a>
+
+    <a href="carousel.html" class="next-card">
+      <div>
+        <div class="next-kicker">Branding &amp; Social</div>
+        <h3 class="next-title">Weekend Events Carousels</h3>
+        <p class="next-desc">Three modular Instagram carousel formats engineered for saves, clicks, and shares.</p>
+      </div>
+      <div class="next-arrow-circle">→</div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>Lavanya Bhatia | lavanyabhatia.work@gmail.com | +91 8001992111</p>
+</footer>
+
+<script>
+/* CURSOR ORB */
+(function() {
+  const orb = document.getElementById('cursor-orb');
+  if (!orb) return;
+  let mouseX = -100, mouseY = -100, orbX = -100, orbY = -100;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateOrb() {
+    orbX += (mouseX - orbX) * 0.18;
+    orbY += (mouseY - orbY) * 0.18;
+    orb.style.left = orbX + 'px';
+    orb.style.top = orbY + 'px';
+    requestAnimationFrame(animateOrb);
+  }
+  animateOrb();
+
+  const hoverTargets = 'a, button, .next-card';
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest(hoverTargets)) orb.classList.add('hovering');
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest(hoverTargets)) orb.classList.remove('hovering');
+  });
+})();
+
+/* SCROLL PROGRESS BAR */
+(function() {
+  const fill = document.querySelector('#scroll-progress .fill');
+  const percentText = document.querySelector('#scroll-progress .percent');
+
+  function update() {
+    const scrollY = window.scrollY || window.pageYOffset;
+    const windowH = window.innerHeight;
+    const documentH = document.documentElement.scrollHeight;
+    let pct = (scrollY / Math.max(1, documentH - windowH)) * 100;
+    pct = Math.min(100, Math.max(0, Math.round(pct)));
+    if (fill) fill.style.height = pct + '%';
+    if (percentText) percentText.textContent = pct + '%';
+  }
+
+  update();
+  window.addEventListener('scroll', update);
+  window.addEventListener('resize', update);
+})();
+
+/* MOBILE NAV */
+const hamburger = document.querySelector('.hamburger');
+const nav = document.querySelector('.topnav');
+
+if (hamburger && nav) {
+  hamburger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = nav.classList.toggle('open');
+    hamburger.classList.toggle('active');
+    hamburger.setAttribute('aria-expanded', isOpen);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (nav.classList.contains('open') && !nav.contains(e.target) && !hamburger.contains(e.target)) {
+      nav.classList.remove('open');
+      hamburger.classList.remove('active');
+    }
+  });
+
+  document.querySelectorAll('.topnav a').forEach(link => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      hamburger.classList.remove('active');
+    });
+  });
+}
+</script>
+</body>
+</html>

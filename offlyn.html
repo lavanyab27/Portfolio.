@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+<title>Instagram Carousel – Lavanya Bhatia</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Yeseva+One&family=Playfair+Display:wght@600;700;900&family=Great+Vibes&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* --- BASE PALETTE & VARIABLES (MATCHING INDEX.HTML) --- */
+:root {
+  --butter: #FFEDCA;
+  --ganache: #3D1D1C;
+  --powder: #9DB4C4;
+  --berry: #7F2834;
+
+  --bg: #FFEDCA;
+  --fg: #3D1D1C;
+  --card-bg: #3D1D1C;
+  --card-fg: #FFEDCA;
+  --muted: rgba(61, 29, 28, 0.76);
+  --border-subtle: rgba(61, 29, 28, 0.18);
+  --accent-blue: #9DB4C4;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { min-height: 100%; overflow-x: clip; width: 100%; }
+
+body {
+  margin: 0;
+  font-family: Poppins, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* --- CUSTOM CURSOR ORB --- */
+#cursor-orb {
+  position: fixed;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(157, 180, 196, 0.85) 0%, rgba(157, 180, 196, 0.15) 70%);
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease;
+  will-change: left, top;
+  display: none;
+}
+#cursor-orb.hovering {
+  width: 48px;
+  height: 48px;
+}
+@media (pointer: fine) {
+  #cursor-orb { display: block; }
+}
+
+/* --- CENTERED CURVED FLOATING NAVIGATION BAR --- */
+header.topbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.55rem 0.65rem 0.55rem 1.4rem;
+  background: rgba(255, 237, 202, 0.94);
+  color: var(--ganache);
+  border: 1.5px solid rgba(61, 29, 28, 0.18);
+  border-radius: 999px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(25, 10, 10, 0.16);
+  transition: all 0.35s ease;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--ganache);
+  white-space: nowrap;
+  transition: transform 0.25s ease;
+}
+.back-link:hover {
+  transform: translateX(-3px);
+}
+
+nav.topnav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+nav.topnav a {
+  font-size: 0.88rem;
+  font-weight: 500;
+  opacity: 0.85;
+  position: relative;
+  transition: opacity 0.25s ease;
+  white-space: nowrap;
+}
+
+nav.topnav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--powder);
+  transition: width 0.25s ease;
+}
+
+nav.topnav a:hover { opacity: 1; }
+nav.topnav a:hover::after { width: 100%; }
+
+.mobile-nav-cta {
+  display: none;
+}
+
+.nav-pill-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: var(--ganache);
+  color: var(--butter);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+}
+.nav-pill-cta:hover {
+  background: var(--powder);
+  color: var(--ganache);
+  transform: translateY(-1px);
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  z-index: 1200;
+  color: var(--ganache);
+}
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2.5px;
+  margin: 4px 0;
+  background: currentColor;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.hamburger.active span:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.active span:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+/* --- SCROLL PROGRESS --- */
+#scroll-progress {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: column;
+}
+#scroll-progress .percent {
+  background: var(--ganache);
+  color: var(--butter);
+  padding: 5px 6px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border: 1px solid rgba(255, 237, 202, 0.25);
+  width: 42px;
+  text-align: center;
+}
+#scroll-progress .track {
+  width: 8px;
+  height: 180px;
+  background: rgba(61, 29, 28, 0.16);
+  border-radius: 999px;
+  padding: 2px;
+}
+#scroll-progress .fill {
+  width: 100%;
+  height: 0%;
+  background: var(--powder);
+  border-radius: 999px;
+  transition: height 140ms ease;
+}
+
+/* --- PROJECT HERO SECTION --- */
+.project-hero {
+  padding: 8.5rem 3rem 3.5rem;
+  max-width: 1240px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ticket-badge {
+  display: inline-block;
+  position: relative;
+  background: var(--powder);
+  color: var(--ganache);
+  font-family: Poppins, sans-serif;
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 0.45rem 1.25rem;
+  border-radius: 4px;
+  transform: rotate(-3deg);
+  margin-bottom: 1.3rem;
+  box-shadow: 0 6px 16px rgba(61, 29, 28, 0.14);
+  -webkit-mask-image:
+    radial-gradient(circle at 0 50%, transparent 5px, black 5.5px),
+    radial-gradient(circle at 100% 50%, transparent 5px, black 5.5px);
+  -webkit-mask-composite: destination-in;
+  mask-image:
+    radial-gradient(circle at 0 50%, transparent 5px, black 5.5px),
+    radial-gradient(circle at 100% 50%, transparent 5px, black 5.5px);
+  mask-composite: intersect;
+}
+
+.page-title {
+  font-family: 'Syne', 'Yeseva One', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.3rem, 5vw, 4.2rem);
+  line-height: 1.02;
+  letter-spacing: -1.5px;
+  text-transform: uppercase;
+  color: var(--ganache);
+  margin: 0 auto 1rem;
+  max-width: 18ch;
+}
+
+.page-subtitle {
+  font-size: clamp(0.98rem, 1.4vw, 1.12rem);
+  color: var(--muted);
+  line-height: 1.68;
+  max-width: 62ch;
+  margin: 0 auto 2.5rem;
+}
+
+/* Metadata Bar */
+.meta-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 22px;
+  padding: 1.5rem 2rem;
+  box-shadow: 8px 8px 0 var(--ganache);
+  text-align: left;
+}
+
+.meta-cell-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  opacity: 0.72;
+  margin-bottom: 0.3rem;
+}
+
+.meta-cell-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ganache);
+  line-height: 1.35;
+}
+
+/* --- SECTION HEADINGS --- */
+.section-header-wrap {
+  text-align: center;
+  margin-bottom: 2.8rem;
+  padding: 0 1.5rem;
+}
+
+.section-heading {
+  font-family: 'Syne', 'Yeseva One', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3.2vw, 2.55rem);
+  letter-spacing: -0.6px;
+  text-transform: uppercase;
+  color: var(--ganache);
+  margin: 0;
+  display: inline-block;
+}
+
+.section-sub {
+  color: var(--muted);
+  font-size: 0.96rem;
+  margin: 0.55rem auto 0;
+  max-width: 54ch;
+}
+
+/* --- CAROUSEL SHOWCASE SECTIONS --- */
+.carousels-wrapper {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 2.5rem 3rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+}
+
+.carousel-showcase-block {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 3.2rem;
+  align-items: center;
+}
+
+.carousel-showcase-block.reverse .carousel-info-col {
+  order: 2;
+}
+.carousel-showcase-block.reverse .carousel-device-col {
+  order: 1;
+}
+
+.carousel-number-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--ganache);
+  color: var(--butter);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 0.42rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+}
+.carousel-number-tag .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--powder);
+}
+
+.carousel-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(1.85rem, 2.8vw, 2.45rem);
+  color: var(--ganache);
+  line-height: 1.15;
+  margin: 0 0 0.5rem 0;
+}
+
+.carousel-format-type {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--berry);
+  margin-bottom: 1.1rem;
+}
+
+.carousel-rationale {
+  font-size: 0.96rem;
+  line-height: 1.68;
+  color: var(--muted);
+  margin: 0 0 1.6rem 0;
+}
+
+/* Slide Flow Breakdown Box (Powder Blue Pop) */
+.slide-breakdown-box {
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 20px;
+  padding: 1.45rem 1.6rem;
+  box-shadow: 7px 7px 0 var(--ganache);
+  margin-bottom: 1.5rem;
+}
+
+.slide-breakdown-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+  margin: 0 0 0.9rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.slide-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.slide-step-btn {
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 237, 202, 0.72);
+  border: 1.5px solid rgba(61, 29, 28, 0.22);
+  border-radius: 12px;
+  padding: 0.65rem 0.95rem;
+  font-family: Poppins, sans-serif;
+  font-size: 0.85rem;
+  color: var(--ganache);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  transition: all 0.22s ease;
+}
+
+.slide-step-btn:hover,
+.slide-step-btn.active {
+  background: var(--ganache);
+  color: var(--butter);
+  border-color: var(--ganache);
+  transform: translateX(4px);
+}
+
+.slide-step-num {
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  background: var(--powder);
+  color: var(--ganache);
+  flex-shrink: 0;
+}
+
+.skill-tags {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.skill-tag {
+  padding: 0.38rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1.5px solid var(--ganache);
+  background: transparent;
+  color: var(--ganache);
+}
+.skill-tag.pop-blue {
+  background: var(--powder);
+  border-color: var(--ganache);
+}
+
+/* --- INTERACTIVE INSTAGRAM POST CARD MOCKUP --- */
+.carousel-device-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ig-post-card {
+  width: 100%;
+  max-width: 410px;
+  background: #FFF9EE;
+  color: var(--ganache);
+  border: 2.5px solid var(--ganache);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 10px 10px 0 var(--powder), 12px 12px 0 var(--ganache);
+}
+
+.ig-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.05rem;
+  border-bottom: 1.5px solid rgba(61, 29, 28, 0.12);
+  background: #FFF9EE;
+}
+
+.ig-author {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.ig-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ganache);
+  color: var(--butter);
+  font-family: 'Yeseva One', serif;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--powder);
+  flex-shrink: 0;
+}
+
+.ig-handle-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ig-handle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.ig-location {
+  font-size: 0.7rem;
+  opacity: 0.68;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ig-slide-pill {
+  background: var(--ganache);
+  color: var(--butter);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Viewport 4:5 Instagram Portrait Ratio */
+.ig-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 4.65;
+  overflow: hidden;
+  background: var(--ganache);
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.ig-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.42s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.ig-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.ig-slide img.slide-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 3;
+}
+
+/* Built-in Editorial Slide Artwork (displays cleanly if PNG isn't placed yet) */
+.slide-fallback-art {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 1.65rem 1.55rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.art-ganache {
+  background: var(--ganache);
+  color: var(--butter);
+}
+.art-butter {
+  background: var(--butter);
+  color: var(--ganache);
+}
+.art-powder {
+  background: var(--powder);
+  color: var(--ganache);
+}
+.art-berry {
+  background: var(--berry);
+  color: var(--butter);
+}
+
+.art-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.art-ticket-stamp {
+  display: inline-block;
+  padding: 0.28rem 0.65rem;
+  border-radius: 4px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--powder);
+  color: var(--ganache);
+  flex-shrink: 0;
+}
+.art-powder .art-ticket-stamp {
+  background: var(--ganache);
+  color: var(--butter);
+}
+.art-berry .art-ticket-stamp {
+  background: var(--butter);
+  color: var(--ganache);
+}
+
+.art-headline {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.72rem;
+  line-height: 1.02;
+  letter-spacing: -0.6px;
+  text-transform: uppercase;
+  margin: 0.5rem 0;
+}
+
+.art-serif-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.65rem;
+  line-height: 1.12;
+  margin: 0.4rem 0;
+}
+
+.art-body {
+  font-size: 0.83rem;
+  line-height: 1.52;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.art-card-strip {
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1.5px dashed currentColor;
+  font-size: 0.76rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Carousel Prev/Next Controls */
+.ig-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ganache);
+  background: rgba(255, 237, 202, 0.94);
+  color: var(--ganache);
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+  transition: all 0.2s ease;
+}
+.ig-arrow:hover {
+  background: var(--powder);
+  transform: translateY(-50%) scale(1.08);
+}
+.ig-arrow.prev { left: 10px; }
+.ig-arrow.next { right: 10px; }
+
+/* IG Footer & Dots */
+.ig-footer {
+  padding: 0.85rem 1.05rem 1.05rem;
+  background: #FFF9EE;
+  border-top: 1.5px solid rgba(61, 29, 28, 0.12);
+}
+
+.ig-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.55rem;
+}
+
+.ig-icons-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--ganache);
+}
+
+.ig-like-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ganache);
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.ig-like-btn.liked {
+  color: var(--berry);
+  transform: scale(1.15);
+}
+
+.ig-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ig-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(61, 29, 28, 0.25);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.ig-dot.active {
+  width: 18px;
+  background: var(--ganache);
+}
+
+.ig-caption {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ganache);
+  margin: 0;
+}
+.ig-caption strong {
+  font-weight: 700;
+}
+
+/* --- DESIGN SYSTEM & CAMPAIGN STRATEGY SECTION --- */
+.system-section {
+  max-width: 1240px;
+  margin: 1rem auto 4.5rem;
+  padding: 0 3rem;
+}
+
+.system-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.8rem;
+}
+
+.system-card {
+  background: var(--powder);
+  color: var(--ganache);
+  border: 2px solid var(--ganache);
+  border-radius: 22px;
+  padding: 1.9rem;
+  box-shadow: 8px 8px 0 var(--ganache);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.system-card-kicker {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  opacity: 0.72;
+  margin-bottom: 0.45rem;
+}
+
+.system-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  margin: 0 0 0.75rem 0;
+  color: var(--ganache);
+}
+
+.system-card p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0 0 1.2rem 0;
+  opacity: 0.9;
+}
+
+.swatch-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.swatch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--butter);
+  border: 1.5px solid var(--ganache);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.swatch-circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--ganache);
+}
+
+/* --- NEXT PROJECT NAVIGATION --- */
+.next-projects-section {
+  max-width: 1240px;
+  margin: 0 auto 5rem;
+  padding: 0 3rem;
+}
+
+.next-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.6rem;
+}
+
+.next-card {
+  background: var(--ganache);
+  color: var(--butter);
+  border: 2px solid var(--ganache);
+  border-radius: 22px;
+  padding: 2rem 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 7px 7px 0 var(--powder);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.next-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 10px 10px 0 var(--powder);
+}
+
+.next-kicker {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  color: var(--powder);
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.next-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.65rem;
+  margin: 0 0 0.3rem 0;
+}
+
+.next-desc {
+  font-size: 0.88rem;
+  opacity: 0.82;
+  margin: 0;
+}
+
+.next-arrow-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--butter);
+  color: var(--ganache);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  transition: background 0.25s ease;
+}
+.next-card:hover .next-arrow-circle {
+  background: var(--powder);
+}
+
+footer {
+  padding: 1.8rem;
+  text-align: center;
+  font-size: 0.88rem;
+  background: var(--ganache);
+  color: rgba(255, 237, 202, 0.72);
+}
+
+/* ==========================================================================
+   TABLET & MOBILE RESPONSIVE STYLES — DOES NOT AFFECT LAPTOP/DESKTOP (> 1024px)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .meta-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .carousel-showcase-block {
+    grid-template-columns: 1fr;
+    gap: 2.2rem;
+  }
+  .carousel-showcase-block.reverse .carousel-info-col,
+  .carousel-showcase-block.reverse .carousel-device-col {
+    order: initial;
+  }
+  .system-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  header.topbar {
+    top: 14px;
+    width: calc(100vw - 24px);
+    justify-content: space-between;
+    padding: 0.6rem 1.15rem;
+  }
+  .back-link {
+    font-size: 0.84rem;
+  }
+  .hamburger { display: block; }
+  .nav-pill-cta { display: none; }
+
+  nav.topnav {
+    position: fixed;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: var(--ganache);
+    color: var(--butter);
+    border-radius: 22px;
+    border: 1.5px solid rgba(255, 237, 202, 0.25);
+    padding: 1.35rem 1.5rem;
+    flex-direction: column;
+    gap: 1.05rem;
+    display: none;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  }
+  nav.topnav.open { display: flex; }
+
+  .mobile-nav-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.2rem;
+    border-radius: 999px;
+    background: var(--powder);
+    color: var(--ganache);
+    font-size: 0.84rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+  }
+
+  /* HERO MOBILE */
+  .project-hero {
+    padding: 5.8rem 1.25rem 2.2rem;
+  }
+  .ticket-badge {
+    font-size: 0.66rem;
+    padding: 0.38rem 0.95rem;
+    margin-bottom: 0.9rem;
+  }
+  .page-title {
+    font-size: clamp(1.65rem, 7.2vw, 2.3rem);
+    letter-spacing: -0.5px;
+    max-width: 100%;
+    margin-bottom: 0.75rem;
+  }
+  .page-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.58;
+    margin-bottom: 1.75rem;
+  }
+  .meta-strip {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1.15rem 1.1rem;
+    gap: 0.95rem 0.85rem;
+    width: calc(100% - 5px);
+    box-shadow: 5px 5px 0 var(--ganache);
+    border-radius: 18px;
+  }
+  .meta-cell-label {
+    font-size: 0.66rem;
+    margin-bottom: 0.2rem;
+  }
+  .meta-cell-val {
+    font-size: 0.84rem;
+  }
+
+  /* CAROUSELS: PLACE INTERACTIVE IG POST DIRECTLY UNDER TITLE ON MOBILE */
+  .carousels-wrapper {
+    padding: 1.6rem 1.25rem 3rem;
+    gap: 3.8rem;
+  }
+  .carousel-showcase-block {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .carousel-info-col {
+    display: contents;
+  }
+  .carousel-number-tag {
+    order: 1;
+    align-self: flex-start;
+    font-size: 0.7rem;
+    padding: 0.36rem 0.85rem;
+    margin-bottom: 0.75rem;
+  }
+  .carousel-title {
+    order: 2;
+    font-size: clamp(1.55rem, 6.2vw, 1.9rem);
+    margin-bottom: 0.35rem;
+  }
+  .carousel-format-type {
+    order: 3;
+    font-size: 0.86rem;
+    margin-bottom: 1.25rem;
+  }
+  .carousel-device-col {
+    order: 4;
+    width: 100%;
+    margin-bottom: 1.4rem;
+  }
+  .carousel-rationale {
+    order: 5;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  /* Hide Slide / Post Architecture blue box on mobile only */
+  .slide-breakdown-box {
+    display: none;
+  }
+  .skill-tags {
+    order: 6;
+  }
+
+  /* IG POST CARD MOBILE FIT */
+  .ig-post-card {
+    max-width: 390px;
+    width: calc(100% - 8px);
+    border-radius: 20px;
+    box-shadow: 6px 6px 0 var(--powder), 8px 8px 0 var(--ganache);
+  }
+  .ig-header {
+    padding: 0.75rem 0.9rem;
+  }
+  .ig-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.76rem;
+  }
+  .ig-handle {
+    font-size: 0.78rem;
+  }
+  .ig-location {
+    font-size: 0.66rem;
+  }
+  .ig-slide-pill {
+    font-size: 0.68rem;
+    padding: 0.22rem 0.58rem;
+  }
+
+  /* SLIDE FALLBACK TYPOGRAPHY FOR NARROW SCREENS */
+  .slide-fallback-art {
+    padding: 1.15rem 1.05rem;
+  }
+  .art-top-row {
+    font-size: 0.62rem;
+    letter-spacing: 1px;
+  }
+  .art-ticket-stamp {
+    font-size: 0.58rem;
+    padding: 0.22rem 0.52rem;
+  }
+  .art-headline {
+    font-size: clamp(1.25rem, 5.4vw, 1.52rem);
+    margin: 0.35rem 0;
+  }
+  .art-serif-title {
+    font-size: clamp(1.2rem, 5vw, 1.48rem);
+    margin: 0.3rem 0;
+  }
+  .art-body {
+    font-size: 0.78rem;
+    line-height: 1.44;
+  }
+  .art-card-strip {
+    padding: 0.58rem 0.75rem;
+    font-size: 0.68rem;
+    border-radius: 10px;
+  }
+  .ig-arrow {
+    width: 30px;
+    height: 30px;
+    font-size: 0.88rem;
+  }
+  .ig-arrow.prev { left: 7px; }
+  .ig-arrow.next { right: 7px; }
+  .ig-footer {
+    padding: 0.75rem 0.9rem 0.9rem;
+  }
+  .ig-caption {
+    font-size: 0.75rem;
+  }
+
+  /* DESIGN SYSTEM & NEXT PROJECTS MOBILE */
+  .system-section,
+  .next-projects-section {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    margin-bottom: 3.5rem;
+  }
+  .section-header-wrap {
+    padding: 0 0.5rem;
+    margin-bottom: 1.8rem;
+  }
+  .section-heading {
+    font-size: clamp(1.35rem, 5.8vw, 1.85rem);
+    line-height: 1.12;
+  }
+  .section-sub {
+    font-size: 0.88rem;
+  }
+  .system-grid {
+    gap: 1.35rem;
+  }
+  .system-card {
+    padding: 1.35rem 1.25rem;
+    width: calc(100% - 5px);
+    box-shadow: 5px 5px 0 var(--ganache);
+    border-radius: 18px;
+  }
+  .system-card h3 {
+    font-size: 1.25rem;
+  }
+  .system-card p {
+    font-size: 0.86rem;
+  }
+
+  .next-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+  .next-card {
+    padding: 1.35rem 1.25rem;
+    gap: 1rem;
+    width: calc(100% - 5px);
+    box-shadow: 5px 5px 0 var(--powder);
+    border-radius: 18px;
+  }
+  .next-title {
+    font-size: 1.32rem;
+  }
+  .next-desc {
+    font-size: 0.83rem;
+  }
+  .next-arrow-circle {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  footer {
+    padding: 1.4rem 1rem;
+    font-size: 0.78rem;
+    line-height: 1.6;
+  }
+
+  #scroll-progress { display: none; }
+}
+
+@media (max-width: 380px) {
+  .meta-strip {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor-orb"></div>
+
+<div id="scroll-progress" aria-hidden="true">
+  <div class="percent">0%</div>
+  <div class="track">
+    <div class="fill" style="height:0%"></div>
+  </div>
+</div>
+
+<!-- CENTERED CURVED PILL NAVIGATION BAR -->
+<header class="topbar" role="banner">
+  <a href="index.html#projects" class="back-link">← Back to Portfolio</a>
+
+  <nav class="topnav" role="navigation" aria-label="Project sections">
+    <a href="#carousel-1">01 Lineup (2)</a>
+    <a href="#carousel-2">02 Spotlight (1)</a>
+    <a href="#carousel-3">03 Vibe Picker (3)</a>
+    <a href="#design-system">System</a>
+    <a href="index.html#contact" class="mobile-nav-cta">Let's Chat</a>
+  </nav>
+
+  <a href="index.html#contact" class="nav-pill-cta">Let's Chat</a>
+
+  <button class="hamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<!-- HERO OVERVIEW -->
+<section class="project-hero">
+  <div class="ticket-badge">BRANDING &amp; SOCIAL CAMPAIGN • 2026</div>
+  <h1 class="page-title">Weekend Events Instagram Carousels</h1>
+  <p class="page-subtitle">A modular social media series designed for a company to promote weekend events—exploring three distinct visual storytelling formats across 2-slide, single-frame, and 3-slide Instagram layouts.</p>
+
+  <div class="meta-strip">
+    <div>
+      <div class="meta-cell-label">Role</div>
+      <div class="meta-cell-val">Visual &amp; Social Media Designer</div>
+    </div>
+    <div>
+      <div class="meta-cell-label">Campaign Scope</div>
+      <div class="meta-cell-val">3 Formats (2, 1 &amp; 3 Slides)</div>
+    </div>
+    <div>
+      <div class="meta-cell-label">Format &amp; Specs</div>
+      <div class="meta-cell-val">1080 × 1350px (4:5 Portrait)</div>
+    </div>
+    <div>
+      <div class="meta-cell-label">Tools Used</div>
+      <div class="meta-cell-val">Figma, Illustrator, Photoshop</div>
+    </div>
+  </div>
+</section>
+
+<!-- THREE INTERACTIVE CAROUSEL SHOWCASES -->
+<main class="carousels-wrapper">
+
+  <!-- CAROUSEL TYPE 01 (2 SLIDES) -->
+  <article class="carousel-showcase-block" id="carousel-1">
+    <div class="carousel-info-col">
+      <div class="carousel-number-tag"><span class="dot"></span> Carousel Type 01 • 2 Slides</div>
+      <h2 class="carousel-title">The Weekend Lineup Guide</h2>
+      <div class="carousel-format-type">Two-Slide Editorial Roundup • Quick-Scan Format</div>
+      <p class="carousel-rationale">Designed as a crisp two-frame weekend planner that followers can bookmark on Friday afternoon. Slide 1 hooks attention with bold display typography, while Slide 2 lays out the complete weekend schedule, timings, and venue details cleanly.</p>
+
+      <div class="slide-breakdown-box">
+        <div class="slide-breakdown-title">
+          <span>Slide Architecture (Click to preview)</span>
+          <span>2 Slides</span>
+        </div>
+        <div class="slide-steps-list" data-controls="deck-1">
+          <button type="button" class="slide-step-btn active" data-slide="0">
+            <span class="slide-step-num">01</span>
+            <span>Hook Cover — "Your Weekend Lineup, Sorted"</span>
+          </button>
+          <button type="button" class="slide-step-btn" data-slide="1">
+            <span class="slide-step-num">02</span>
+            <span>Full Weekend Schedule — Dates, Timings &amp; RSVP</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="skill-tags">
+        <span class="skill-tag pop-blue">2-Slide Deck</span>
+        <span class="skill-tag">Editorial Grid</span>
+        <span class="skill-tag">Typographic Hierarchy</span>
+      </div>
+    </div>
+
+    <div class="carousel-device-col">
+      <div class="ig-post-card" id="deck-1" data-total="2">
+        <div class="ig-header">
+          <div class="ig-author">
+            <div class="ig-avatar">CO</div>
+            <div class="ig-handle-wrap">
+              <span class="ig-handle">company.events</span>
+              <span class="ig-location">Bengaluru • Weekend Guide</span>
+            </div>
+          </div>
+          <span class="ig-slide-pill">1 / 2</span>
+        </div>
+
+        <div class="ig-viewport">
+          <div class="ig-track">
+            <!-- Slide 1 -->
+            <div class="ig-slide">
+              <img class="slide-art" src="Events(Variety) 1.png" alt="Weekend Lineup Slide 1" onerror="this.style.display='none'">
+              <div class="slide-fallback-art art-ganache">
+                <div class="art-top-row">
+                  <span>FRI — SUN</span>
+                  <span class="art-ticket-stamp">01 / 02</span>
+                </div>
+                <div>
+                  <h3 class="art-headline">YOUR WEEKEND LINEUP, SORTED.</h3>
+                  <p class="art-body">Two days of live music, makers pop-ups, and community gatherings—all in one place.</p>
+                </div>
+                <div class="art-card-strip">
+                  <span>SWIPE FOR FULL SCHEDULE</span>
+                  <span>→</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="ig-slide">
+              <img class="slide-art" src="Events(Variety) 2.png" alt="Weekend Lineup Slide 2" onerror="this.style.display='none'">
+              <div class="slide-fallback-art art-butter">
+                <div class="art-top-row">
+                  <span>WEEKEND SCHEDULE</span>
+                  <span class="art-ticket-stamp">02 / 02</span>
+                </div>
+                <div>
+                  <h3 class="art-serif-title">Sat • Makers Pop-Up (11 AM)<br>Sun • Supper &amp; Talks (7 PM)</h3>
+                  <p class="art-body">Bookmark this frame for quick timings and grab your spot via the link in bio.</p>
+                </div>
+                <div class="art-card-strip">
+                  <span>MAIN COURTYARD &amp; HALL</span>
+                  <span>RSVP ↗</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="ig-arrow prev" aria-label="Previous slide">‹</button>
+          <button type="button" class="ig-arrow next" aria-label="Next slide">›</button>
+        </div>
+
+        <div class="ig-footer">
+          <div class="ig-actions-row">
+            <div class="ig-icons-left">
+              <button type="button" class="ig-like-btn" aria-label="Like post">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </div>
+            <div class="ig-dots"></div>
+          </div>
+          <p class="ig-caption"><strong>company.events</strong> Weekend plans = officially handled. Swipe to save the schedule ✨</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- CAROUSEL TYPE 02 (1 PIC / SINGLE FRAME) -->
+  <article class="carousel-showcase-block reverse" id="carousel-2">
+    <div class="carousel-info-col">
+      <div class="carousel-number-tag"><span class="dot"></span> Format 02 • 1 Frame</div>
+      <h2 class="carousel-title">Flagship Event Spotlight</h2>
+      <div class="carousel-format-type">Single-Frame Poster Post • High-Impact Announcement</div>
+      <p class="carousel-rationale">Crafted as a bold, self-contained announcement graphic for a marquee weekend event. All key hooks—headline, time, venue, and ticket callout—are balanced inside a single 4:5 frame so viewers get every detail at first glance without needing to swipe.</p>
+
+      <div class="slide-breakdown-box">
+        <div class="slide-breakdown-title">
+          <span>Post Architecture</span>
+          <span>1 Frame</span>
+        </div>
+        <div class="slide-steps-list" data-controls="deck-2">
+          <button type="button" class="slide-step-btn active" data-slide="0">
+            <span class="slide-step-num">01</span>
+            <span>All-in-One Hero Poster — Title, Date, Venue &amp; Pass CTA</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="skill-tags">
+        <span class="skill-tag pop-blue">Single Hero Frame</span>
+        <span class="skill-tag">Event Poster</span>
+        <span class="skill-tag">Instant Readability</span>
+      </div>
+    </div>
+
+    <div class="carousel-device-col">
+      <div class="ig-post-card" id="deck-2" data-total="1">
+        <div class="ig-header">
+          <div class="ig-author">
+            <div class="ig-avatar">CO</div>
+            <div class="ig-handle-wrap">
+              <span class="ig-handle">company.events</span>
+              <span class="ig-location">Saturday Night Special</span>
+            </div>
+          </div>
+          <span class="ig-slide-pill">1 / 1</span>
+        </div>
+
+        <div class="ig-viewport">
+          <div class="ig-track">
+            <!-- Single Slide -->
+            <div class="ig-slide">
+              <img class="slide-art" src="Offlyn - Carousel.png" alt="Flagship Event Spotlight" onerror="this.style.display='none'">
+              <div class="slide-fallback-art art-berry">
+                <div class="art-top-row">
+                  <span>SAT • 8 PM ONWARDS</span>
+                  <span class="art-ticket-stamp">FLAGSHIP</span>
+                </div>
+                <div>
+                  <h3 class="art-headline">AFTER HOURS: DESIGN &amp; SOUND</h3>
+                  <p class="art-body">One night of projection mapping, live modular synth sets, and studio energy at Warehouse Stage.</p>
+                </div>
+                <div class="art-card-strip">
+                  <span>ADMIT ONE • LIMITED PASSES</span>
+                  <span>LINK IN BIO ↗</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="ig-arrow prev" aria-label="Previous slide">‹</button>
+          <button type="button" class="ig-arrow next" aria-label="Next slide">›</button>
+        </div>
+
+        <div class="ig-footer">
+          <div class="ig-actions-row">
+            <div class="ig-icons-left">
+              <button type="button" class="ig-like-btn" aria-label="Like post">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </div>
+            <div class="ig-dots"></div>
+          </div>
+          <p class="ig-caption"><strong>company.events</strong> Lights down, sound up. Grab your pass for After Hours this Saturday night 🎟️</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- CAROUSEL TYPE 03 (3 SLIDES) -->
+  <article class="carousel-showcase-block" id="carousel-3">
+    <div class="carousel-info-col">
+      <div class="carousel-number-tag"><span class="dot"></span> Carousel Type 03 • 3 Slides</div>
+      <h2 class="carousel-title">Pick Your Weekend Vibe</h2>
+      <div class="carousel-format-type">Three-Slide Interactive Series • Share &amp; Tag Engagement</div>
+      <p class="carousel-rationale">Built for organic reach and Story shares across a tight three-slide arc. Each frame highlights a distinct weekend mood and session so followers can swipe through, pick their match, and tag the friend they're bringing along.</p>
+
+      <div class="slide-breakdown-box">
+        <div class="slide-breakdown-title">
+          <span>Slide Architecture (Click to preview)</span>
+          <span>3 Slides</span>
+        </div>
+        <div class="slide-steps-list" data-controls="deck-3">
+          <button type="button" class="slide-step-btn active" data-slide="0">
+            <span class="slide-step-num">01</span>
+            <span>Hook &amp; Mood 01 — "Which Weekend Vibe Are You?"</span>
+          </button>
+          <button type="button" class="slide-step-btn" data-slide="1">
+            <span class="slide-step-num">02</span>
+            <span>Mood 02 — Evening Rooftop &amp; Live Vinyl Session</span>
+          </button>
+          <button type="button" class="slide-step-btn" data-slide="2">
+            <span class="slide-step-num">03</span>
+            <span>Mood 03 &amp; CTA — Craft Lab + Tag Your Plus-One</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="skill-tags">
+        <span class="skill-tag pop-blue">3-Slide Story Arc</span>
+        <span class="skill-tag">Community Engagement</span>
+        <span class="skill-tag">Story-Shareable</span>
+      </div>
+    </div>
+
+    <div class="carousel-device-col">
+      <div class="ig-post-card" id="deck-3" data-total="3">
+        <div class="ig-header">
+          <div class="ig-author">
+            <div class="ig-avatar">CO</div>
+            <div class="ig-handle-wrap">
+              <span class="ig-handle">company.events</span>
+              <span class="ig-location">Weekend Vibe Check</span>
+            </div>
+          </div>
+          <span class="ig-slide-pill">1 / 3</span>
+        </div>
+
+        <div class="ig-viewport">
+          <div class="ig-track">
+            <!-- Slide 1 -->
+            <div class="ig-slide">
+              <img class="slide-art" src="Events1.png" alt="Vibe Picker Slide 1" onerror="this.style.display='none'">
+              <div class="slide-fallback-art art-powder">
+                <div class="art-top-row">
+                  <span>WEEKEND VIBE CHECK</span>
+                  <span class="art-ticket-stamp">01 / 03</span>
+                </div>
+                <div>
+                  <h3 class="art-headline">WHICH WEEKEND MOOD ARE YOU?</h3>
+                  <p class="art-body">01 • The Slow Sipper: Morning pour-overs &amp; sketchbook club at 10 AM.</p>
+                </div>
+                <div class="art-card-strip">
+                  <span>SWIPE FOR MORE MOODS</span>
+                  <span>→</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="ig-slide">
+              <img class="slide-art" src="Events2.png" alt="Vibe Picker Slide 2" onerror="this.style.display='none'">
+              <div class="slide-fallback-art art-ganache">
+                <div class="art-top-row">
+                  <span>MOOD 02 • NIGHT OWL</span>
+                  <span class="art-ticket-stamp">02 / 03</span>
+                </div>
+                <div>
+                  <h3 class="art-serif-title">Rooftop Vinyl &amp; Sunset Sets</h3>
+                  <p class="art-body">Warm rooftop lighting, indie disco edits, and late-evening conversations starting 9 PM.</p>
+                </div>
+                <div class="art-card-strip">
+                  <span>TERRACE STAGE • SAT</span>
+                  <span>NEXT →</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="ig-slide">
+              <img class="slide-art" src="Events3.png" alt="Vibe Picker Slide 3" onerror="this.style.display='none'">
+              <div class="slide-fallback-art art-butter">
+                <div class="art-top-row">
+                  <span>MOOD 03 • MAKER</span>
+                  <span class="art-ticket-stamp">03 / 03</span>
+                </div>
+                <div>
+                  <h3 class="art-serif-title">Sunday Clay &amp; Craft Lab</h3>
+                  <p class="art-body">Hands-on studio session at 3 PM. Comment your pick &amp; tag your plus-one below!</p>
+                </div>
+                <div class="art-card-strip">
+                  <span>RSVP VIA LINK IN BIO</span>
+                  <span>✦ ✦ ✦</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="ig-arrow prev" aria-label="Previous slide">‹</button>
+          <button type="button" class="ig-arrow next" aria-label="Next slide">›</button>
+        </div>
+
+        <div class="ig-footer">
+          <div class="ig-actions-row">
+            <div class="ig-icons-left">
+              <button type="button" class="ig-like-btn" aria-label="Like post">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </div>
+            <div class="ig-dots"></div>
+          </div>
+          <p class="ig-caption"><strong>company.events</strong> Slow coffee morning, rooftop vinyl night, or Sunday clay lab? Tell us your mood 👇</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<!-- DESIGN SYSTEM & SOCIAL STRATEGY -->
+<section class="system-section" id="design-system">
+  <div class="section-header-wrap">
+    <h2 class="section-heading">Visual System &amp; Strategy</h2>
+    <p class="section-sub">How the three formats stay cohesive while serving distinct campaign goals</p>
+  </div>
+
+  <div class="system-grid">
+    <div class="system-card">
+      <div>
+        <div class="system-card-kicker">01 • Color Rhythm</div>
+        <h3>High-Contrast Feed Stopping Power</h3>
+        <p>Alternating warm cream, deep espresso, and crisp powder blue backgrounds prevents scroll fatigue across multi-slide decks while keeping event times legible on mobile screens.</p>
+      </div>
+      <div class="swatch-row">
+        <span class="swatch-chip"><span class="swatch-circle" style="background:#3D1D1C"></span>#3D1D1C</span>
+        <span class="swatch-chip"><span class="swatch-circle" style="background:#FFEDCA"></span>#FFEDCA</span>
+        <span class="swatch-chip"><span class="swatch-circle" style="background:#9DB4C4"></span>#9DB4C4</span>
+        <span class="swatch-chip"><span class="swatch-circle" style="background:#7F2834"></span>#7F2834</span>
+      </div>
+    </div>
+
+    <div class="system-card">
+      <div>
+        <div class="system-card-kicker">02 • Typographic Pairing</div>
+        <h3>Display Hook + Editorial Detail</h3>
+        <p>Bold uppercase display headers anchor Slide 1 at thumbnail scale in the profile grid, while high-contrast serif titles and clean sans-serif metadata organize schedules inside.</p>
+      </div>
+      <div class="swatch-row">
+        <span class="swatch-chip">Syne Bold</span>
+        <span class="swatch-chip">Playfair Display</span>
+        <span class="swatch-chip">Poppins</span>
+      </div>
+    </div>
+
+    <div class="system-card">
+      <div>
+        <div class="system-card-kicker">03 • Pacing &amp; Length</div>
+        <h3>Right-Sized Per Campaign Goal</h3>
+        <p>Each format uses the exact slide count needed: <strong>2 slides</strong> for quick schedule saves, <strong>1 poster frame</strong> for immediate event impact, and <strong>3 slides</strong> for interactive mood matching.</p>
+      </div>
+      <div class="swatch-row">
+        <span class="swatch-chip">4:5 Safe Zones</span>
+        <span class="swatch-chip">Visual Continuity</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MORE BRANDING & PACKAGING PROJECTS -->
+<section class="next-projects-section">
+  <div class="section-header-wrap">
+    <h2 class="section-heading">More in Branding</h2>
+  </div>
+
+  <div class="next-grid">
+    <a href="gin.html" class="next-card">
+      <div>
+        <div class="next-kicker">Branding &amp; Packaging</div>
+        <h3 class="next-title">Jaisalmer Gin</h3>
+        <p class="next-desc">Maximalist visual identity system and bottle packaging for a heritage craft gin.</p>
+      </div>
+      <div class="next-arrow-circle">→</div>
+    </a>
+
+    <a href="bournvita.html" class="next-card">
+      <div>
+        <div class="next-kicker">Branding &amp; Packaging</div>
+        <h3 class="next-title">Bournvita Rebrand</h3>
+        <p class="next-desc">Playful packaging redesign and new flavor profiles tailored for a Gen-Z audience.</p>
+      </div>
+      <div class="next-arrow-circle">→</div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>Lavanya Bhatia | lavanyabhatia.work@gmail.com | +91 8001992111</p>
+</footer>
+
+<script>
+/* CURSOR ORB */
+(function() {
+  const orb = document.getElementById('cursor-orb');
+  if (!orb) return;
+  let mouseX = -100, mouseY = -100, orbX = -100, orbY = -100;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateOrb() {
+    orbX += (mouseX - orbX) * 0.18;
+    orbY += (mouseY - orbY) * 0.18;
+    orb.style.left = orbX + 'px';
+    orb.style.top = orbY + 'px';
+    requestAnimationFrame(animateOrb);
+  }
+  animateOrb();
+
+  const hoverTargets = 'a, button, .ig-arrow, .ig-dot, .slide-step-btn, .next-card';
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest(hoverTargets)) orb.classList.add('hovering');
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest(hoverTargets)) orb.classList.remove('hovering');
+  });
+})();
+
+/* SCROLL PROGRESS BAR */
+(function() {
+  const fill = document.querySelector('#scroll-progress .fill');
+  const percentText = document.querySelector('#scroll-progress .percent');
+
+  function update() {
+    const scrollY = window.scrollY || window.pageYOffset;
+    const windowH = window.innerHeight;
+    const documentH = document.documentElement.scrollHeight;
+    let pct = (scrollY / Math.max(1, documentH - windowH)) * 100;
+    pct = Math.min(100, Math.max(0, Math.round(pct)));
+    if (fill) fill.style.height = pct + '%';
+    if (percentText) percentText.textContent = pct + '%';
+  }
+
+  update();
+  window.addEventListener('scroll', update);
+  window.addEventListener('resize', update);
+})();
+
+/* MOBILE NAV */
+const hamburger = document.querySelector('.hamburger');
+const nav = document.querySelector('.topnav');
+
+if (hamburger && nav) {
+  hamburger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = nav.classList.toggle('open');
+    hamburger.classList.toggle('active');
+    hamburger.setAttribute('aria-expanded', isOpen);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (nav.classList.contains('open') && !nav.contains(e.target) && !hamburger.contains(e.target)) {
+      nav.classList.remove('open');
+      hamburger.classList.remove('active');
+    }
+  });
+
+  document.querySelectorAll('.topnav a').forEach(link => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      hamburger.classList.remove('active');
+    });
+  });
+}
+
+/* INTERACTIVE INSTAGRAM CAROUSEL DECKS */
+document.querySelectorAll('.ig-post-card').forEach(deck => {
+  const track = deck.querySelector('.ig-track');
+  const slides = deck.querySelectorAll('.ig-slide');
+  const prevBtn = deck.querySelector('.ig-arrow.prev');
+  const nextBtn = deck.querySelector('.ig-arrow.next');
+  const pill = deck.querySelector('.ig-slide-pill');
+  const dotsContainer = deck.querySelector('.ig-dots');
+  const likeBtn = deck.querySelector('.ig-like-btn');
+  const total = slides.length;
+  let current = 0;
+
+  const stepList = document.querySelector(`.slide-steps-list[data-controls="${deck.id}"]`);
+  const stepBtns = stepList ? stepList.querySelectorAll('.slide-step-btn') : [];
+
+  if (total <= 1) {
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (dotsContainer) dotsContainer.style.display = 'none';
+  } else {
+    for (let i = 0; i < total; i++) {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'ig-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      dot.addEventListener('click', () => goTo(i));
+      dotsContainer.appendChild(dot);
+    }
+  }
+  const dots = dotsContainer ? dotsContainer.querySelectorAll('.ig-dot') : [];
+
+  function goTo(index) {
+    current = (index + total) % total;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    if (pill) pill.textContent = `${current + 1} / ${total}`;
+    dots.forEach((d, idx) => d.classList.toggle('active', idx === current));
+    stepBtns.forEach((btn, idx) => btn.classList.toggle('active', idx === current));
+  }
+
+  if (total > 1) {
+    prevBtn.addEventListener('click', () => goTo(current - 1));
+    nextBtn.addEventListener('click', () => goTo(current + 1));
+
+    const viewport = deck.querySelector('.ig-viewport');
+    let startX = 0;
+    viewport.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', (e) => {
+      const diff = startX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) {
+        goTo(diff > 0 ? current + 1 : current - 1);
+      }
+    }, { passive: true });
+  }
+
+  stepBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetSlide = parseInt(btn.getAttribute('data-slide'), 10);
+      if (!isNaN(targetSlide)) {
+        goTo(targetSlide);
+      }
+    });
+  });
+
+  if (likeBtn) {
+    likeBtn.addEventListener('click', () => {
+      likeBtn.classList.toggle('liked');
+      const svg = likeBtn.querySelector('svg');
+      svg.setAttribute('fill', likeBtn.classList.contains('liked') ? 'currentColor' : 'none');
+    });
+  }
+});
+</script>
+</body>
+</html>
